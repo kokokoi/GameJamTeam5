@@ -7,7 +7,7 @@ public class ChangeScene : MonoBehaviour
 {
    public void OnClickStartButton()
    {
-        SceneManager.LoadScene("MoriScene");
+        SceneManager.LoadScene("GameScene");
    }
 
 }
