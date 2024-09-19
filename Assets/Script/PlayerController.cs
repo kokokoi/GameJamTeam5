@@ -32,6 +32,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField] bool isGrounded = true;//地面にいるかどうか
     Rigidbody2D rb;
 
+    Animator animator;
+    bool direction;
+    bool isJump_;
+
     Vector3 targetPosition;
 
     public enum Button
@@ -67,6 +71,8 @@ public class PlayerController : MonoBehaviour
             isDashing = true;
             DashTime = dashTime;
             DashCoolTime = dashCoolTime;
+
+            animator.PlayInFixedTime("Dush", 0);
 
             // 目標位置を計算してダッシュのために移動を開始
             targetPosition = transform.position + new Vector3(x, y, 0) * dashSpeed * dashTime;
@@ -104,9 +110,13 @@ public class PlayerController : MonoBehaviour
         {
             rb.AddForce(new Vector2(0, jumpPower), ForceMode2D.Impulse);
             isGrounded = false;
+
+            animator.PlayInFixedTime("Jump", 0);
         }
 
         DashCoolTime -= Time.deltaTime;
+
+        UpdateAnimation();  
 
         UpdateUI();
     }
@@ -134,6 +144,91 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    void UpdateAnimation()
+    {
+        // 現在のステート名を取得
+        AnimatorClipInfo[] clipInfo = animator.GetCurrentAnimatorClipInfo(0);
+        string clipName = clipInfo[0].clip.name;
+
+        float horizontal = Input.GetAxisRaw("Horizontal");
+        // ----- 進行方向に合わせて画像を反転する -----
+        {
+            if (horizontal > 0.0f)
+            {
+                Vector3 scale = transform.localScale;
+                scale.x = scale.x > 0.0f ? scale.x : scale.x * -1;
+                transform.localScale = scale;
+            }
+            else if (horizontal < 0.0f)
+            {
+                Vector3 scale = transform.localScale;
+                scale.x = scale.x < 0.0f ? scale.x : scale.x * -1;
+                transform.localScale = scale;
+            }
+        }
+
+        // 空中にいる
+        if (isGrounded == false)
+        {
+            // 現在JumpState
+            if (isJump_)
+            {
+                AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+                if (stateInfo.IsName("Jump"))
+                {
+                    if (stateInfo.normalizedTime >= 0.7f)
+                    {
+                        isJump_ = false;
+                        animator.PlayInFixedTime("Fall", 0);
+                    }
+                }
+            }
+
+            return;
+        }
+
+        // 現在ダッシュ中のためここで終了
+        if (isDashing) return;
+
+        // 移動なし
+        if (horizontal == 0.0f)
+        {
+            // 現在のステートがIdleではないときに各項目設定
+            if (clipName != "Idle")
+            {
+                // 現在のアニメーションを終了しIdleのアニメーションを流す
+                animator.PlayInFixedTime("Idle", 0);
+            }
+        }
+        // 右方向に移動
+        else if (horizontal > 0.0f)
+        {
+            // 現在の進行方向が右でないとき、
+            // RunStateではないときに各項目を設定する
+            if (direction != true || clipName != "Run")
+            {
+                // 現在のアニメーションを終了しRunのアニメーションを流す
+                animator.PlayInFixedTime("Run", 0);
+
+                // 進行方向を右に設定する
+                direction = true;
+            }
+        }
+        // 左方向に移動
+        else
+        {
+            // 現在の進行方向が左でないとき、
+            // RunStateではないときに各項目を設定する
+            if (direction != false || clipName != "Run")
+            {
+                // 現在のアニメーションを終了しRunのアニメーションを流す
+                animator.PlayInFixedTime("Run", 0);
+
+                // 進行方向を左に設定する
+                direction = false;
+            }
+        }
+    }
 
     void UpdateUI()
     {
