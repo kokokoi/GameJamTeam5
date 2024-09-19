@@ -7,6 +7,8 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    public bool Alive = true;
+
     //通常スピード、ダッシュスピードの変数宣言
     [SerializeField] float speed, dashSpeed;
     [SerializeField] float dashCoolTime;
@@ -50,6 +52,7 @@ public class PlayerController : MonoBehaviour
         rb=GetComponent<Rigidbody2D>();
         DashCoolTime = 0f;
         DashTime = 0f;
+        Alive = true;
      }
 
     // Update is called once per frame
@@ -186,7 +189,14 @@ public class PlayerController : MonoBehaviour
             uiButton[(int)Button.Space].ButtonRelease();
     }
 
-    void Restart()
+    public void Death(bool death)
+    {
+       if(death)
+        {
+            Reset();
+        }
+    }
+    private void Reset()
     {
         this.transform.position = Vector3.zero;
     }
