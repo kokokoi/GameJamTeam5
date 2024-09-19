@@ -15,8 +15,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float deceleration;//減速度
     [SerializeField] float maxSpeed;//最高速度
 
-
-
     //現在のスピードを保持しておく本数
     float currentSpeed;
     float DashCoolTime;
@@ -75,7 +73,7 @@ public class PlayerController : MonoBehaviour
         }
 
 
-        if(DashCoolTime<=0&&!isDashing)
+        if (DashCoolTime <= 0 && !isDashing) 
         {
             if(Input.GetKey(KeyCode.LeftShift))
             {
@@ -111,7 +109,7 @@ public class PlayerController : MonoBehaviour
             {
                 // プレイヤーが動いていないときは減速させる
                 currentSpeed -= deceleration * Time.deltaTime;
-                currentSpeed = Mathf.Max(currentSpeed, 0);  // 最低速度は0に制限
+                currentSpeed = Mathf.Clamp(currentSpeed, 0,maxSpeed);  // 最低速度は0に制限
             }
         }
 
