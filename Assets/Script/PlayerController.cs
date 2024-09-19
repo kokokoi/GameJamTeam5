@@ -11,12 +11,19 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float jumpPower;
     [SerializeField] float Yspeed;
     [SerializeField] float dashTime;
+    [SerializeField] float acceleration;//加速度
+    [SerializeField] float deceleration;//減速度
+    [SerializeField] float maxSpeed;//最高速度
+
 
 
     //現在のスピードを保持しておく本数
     float currentSpeed;
     float DashCoolTime;
     float DashTime;
+
+    bool isDashing = false;
+    bool isMovingHorizontally=false;
 
     //ジャンプ関連
     [SerializeField] bool isGrounded = true;//地面にいるかどうか
@@ -40,6 +47,8 @@ public class PlayerController : MonoBehaviour
 
         //RigidBody2dコンポーネントを取得
         rb=GetComponent<Rigidbody2D>();
+        DashCoolTime = 0f;
+        DashTime = 0f;
      }
 
     // Update is called once per frame
@@ -66,40 +75,60 @@ public class PlayerController : MonoBehaviour
         }
 
 
-        if (DashCoolTime <= 0)
+        if(DashCoolTime<=0&&!isDashing)
         {
-            // ダッシュ処理
-            if (Input.GetKey(KeyCode.LeftShift))
+            if(Input.GetKey(KeyCode.LeftShift))
             {
+                isDashing = true;
                 DashTime = dashTime;
                 DashCoolTime = dashCoolTime;
+                currentSpeed = dashSpeed;
             }
         }
-        if(DashTime>0)
-        {
-            // 通常スピードが早くなる
-            currentSpeed = dashSpeed;
 
-            // Y方向のスピードもダッシュスピードにする
-            if (y != 0)
+        // ダッシュ中の処理
+        if (isDashing)
+        {
+            DashTime -= Time.deltaTime;  // ダッシュ時間を減らす
+
+            // ダッシュが終了したら通常速度に戻す
+            if (DashTime <= 0)
             {
-                y = dashSpeed * Yspeed;  // 上下方向にもダッシュ
+                isDashing = false;
             }
         }
 
-
-        // ダッシュのクールタイム処理
-        if (currentSpeed > speed)
+        // ダッシュしていないときに加速度を使用した通常移動処理
+        if (!isDashing)
         {
-            currentSpeed -= 1.0f;
+            if (x != 0) // プレイヤーが左右に動いているとき
+            {
+                // 加速度に基づいてスピードを増加させる
+                currentSpeed += acceleration * Time.deltaTime;
+                currentSpeed = Mathf.Clamp(currentSpeed, 0, maxSpeed);  // 最高速度に制限
+            }
+            else
+            {
+                // プレイヤーが動いていないときは減速させる
+                currentSpeed -= deceleration * Time.deltaTime;
+                currentSpeed = Mathf.Max(currentSpeed, 0);  // 最低速度は0に制限
+            }
         }
 
-
-        DashCoolTime -= 1.0f;
-        DashTime -= 1.0f;
-
-        // 移動処理
+        // キー入力に関わらず、ダッシュ中はダッシュスピードで移動を続ける
         transform.Translate(new Vector3(x, y, 0) * currentSpeed * Time.deltaTime);
+
+        // スペースキーを押してジャンプする処理
+        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        {
+            rb.AddForce(new Vector2(0, jumpPower), ForceMode2D.Impulse);
+            isGrounded = false;
+        }
+
+        // クールタイムを減らす
+        DashCoolTime -= Time.deltaTime;
+
+
 
         // スペースキーを押してジャンプする処理
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
@@ -109,7 +138,12 @@ public class PlayerController : MonoBehaviour
             isGrounded = false; // ジャンプ中は地面にいないと判定
         }
 
-        rb.gravityScale = 10.0f;
+        if (!isGrounded)
+        {
+            rb.gravityScale = 10.0f;
+        }
+
+        isGrounded = false;
 
         UpdateUI();
     }
@@ -122,6 +156,14 @@ public class PlayerController : MonoBehaviour
 
         // プレイヤーが地面に接触している場合
         if (collision.gameObject.CompareTag("Ground"))
+        {
+            isGrounded = true;  // 地面に戻ったら再びジャンプ可能にする
+            Yspeed = 0.0f;
+            rb.gravityScale = 10.0f;
+            rb.AddForce(collision.contacts[0].normal * -1 * 20);
+        }
+        // プレイヤーが地面に接触している場合
+        if (collision.gameObject.CompareTag("Slope"))
         {
             isGrounded = true;  // 地面に戻ったら再びジャンプ可能にする
             Yspeed = 0.0f;
