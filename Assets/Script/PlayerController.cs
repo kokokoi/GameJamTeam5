@@ -11,7 +11,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float speed, dashSpeed;
     [SerializeField] float dashCoolTime;
     [SerializeField] float jumpPower;
-    [SerializeField] float Yspeed;
     [SerializeField] float dashTime;
     [SerializeField] float acceleration;//加速度
     [SerializeField] float deceleration;//減速度
@@ -65,11 +64,19 @@ public class PlayerController : MonoBehaviour
         float x = Input.GetAxis("Horizontal");
         float y = 0;
 
+        //上方向のダッシュ入力を取得
+        if(Input.GetKey(KeyCode.W))
+        {
+
+        }
+
         if (DashCoolTime <= 0 && !isDashing && Input.GetKey(KeyCode.LeftShift))
         {
             isDashing = true;
             DashTime = dashTime;
             DashCoolTime = dashCoolTime;
+
+            animator.PlayInFixedTime("Dash", 0);
 
             // 目標位置を計算してダッシュのために移動を開始
             targetPosition = transform.position + new Vector3(x, y, 0) * dashSpeed * dashTime;
