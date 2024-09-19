@@ -7,32 +7,34 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public bool Alive = true;
-
     //通常スピード、ダッシュスピードの変数宣言
     [SerializeField] float speed, dashSpeed;
     [SerializeField] float dashCoolTime;
     [SerializeField] float jumpPower;
-    [SerializeField] float Yspeed;
     [SerializeField] float dashTime;
     [SerializeField] float acceleration;//加速度
     [SerializeField] float deceleration;//減速度
     [SerializeField] float maxSpeed;//最高速度
+    [SerializeField] float airControlFactor = 0.0f;//空中での操作制限
 
     //現在のスピードを保持しておく本数
     float currentSpeed;
     float DashCoolTime;
     float DashTime;
 
-
     bool isDashing = false;
-    bool isMovingHorizontally=false;
+    bool isMovingHorizontally = false;
 
     //ジャンプ関連
-    [SerializeField] bool isGrounded = true;//地面にいるかどうか
+    [SerializeField] bool isGrounded;//地面にいるかどうか
     Rigidbody2D rb;
 
     Vector3 targetPosition;
+
+    Animator animator;
+    bool isJump;
+    bool direction;
+
 
     public enum Button
     {
@@ -50,23 +52,34 @@ public class PlayerController : MonoBehaviour
         currentSpeed = speed;
 
         //RigidBody2dコンポーネントを取得
-        rb=GetComponent<Rigidbody2D>();
+        rb = GetComponent<Rigidbody2D>();
         DashCoolTime = 0f;
         DashTime = 0f;
-        Alive = true;
-     }
+        animator = GetComponent<Animator>();
+    }
 
     // Update is called once per frame
     void Update()
     {
-        float x = Input.GetAxisRaw("Horizontal");
+        float x = Input.GetAxis("Horizontal");
         float y = 0;
+
+        //上方向のダッシュ入力を取得
+        if(Input.GetKey(KeyCode.W))
+        {
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
+                y = 1;
+            }
+        }
 
         if (DashCoolTime <= 0 && !isDashing && Input.GetKey(KeyCode.LeftShift))
         {
             isDashing = true;
             DashTime = dashTime;
             DashCoolTime = dashCoolTime;
+
+            animator.PlayInFixedTime("Dash", 0);
 
             // 目標位置を計算してダッシュのために移動を開始
             targetPosition = transform.position + new Vector3(x, y, 0) * dashSpeed * dashTime;
@@ -84,14 +97,16 @@ public class PlayerController : MonoBehaviour
         // ダッシュしていない場合は通常の移動処理
         if (!isDashing)
         {
+            float controlFactor = isGrounded ? 1.0f : airControlFactor;
+
             if (x != 0)
             {
-                currentSpeed += acceleration * Time.deltaTime;
+                currentSpeed += acceleration * Time.deltaTime * controlFactor;
                 currentSpeed = Mathf.Clamp(currentSpeed, 0, maxSpeed);
             }
             else
             {
-                currentSpeed -= deceleration * Time.deltaTime;
+                currentSpeed -= deceleration * Time.deltaTime * controlFactor;
                 currentSpeed = Mathf.Clamp(currentSpeed, 0, maxSpeed);
             }
 
@@ -104,36 +119,124 @@ public class PlayerController : MonoBehaviour
         {
             rb.AddForce(new Vector2(0, jumpPower), ForceMode2D.Impulse);
             isGrounded = false;
+
+            // ジャンプフラグを立てる
+            isJump = true;
+            animator.PlayInFixedTime("Jump", 0);
         }
 
         DashCoolTime -= Time.deltaTime;
 
+        UpdateAnimation();
+
         UpdateUI();
     }
 
-    //地面との接触を判定する関数（例としてOnCollisionEnter2Dを使用）
-    private void OnCollisionStay2D(Collision2D collision)
+    //地面との接触を判定する関数（OnCollisionEnter2DとOnCollisionExit2Dを使用）
+    private void OnCollisionEnter2D(Collision2D collision)
     {
-        Debug.Log(isGrounded);
-
-
         // プレイヤーが地面に接触している場合
-        if (collision.gameObject.CompareTag("Ground"))
+        if (collision.gameObject.CompareTag("Ground") || collision.gameObject.CompareTag("Slope"))
         {
-            isGrounded = true;  // 地面に戻ったら再びジャンプ可能にする
-            Yspeed = 0.0f;
-            rb.gravityScale = 10.0f;
-            rb.AddForce(collision.contacts[0].normal * -1 * 20);
-        }
-        // プレイヤーが地面に接触している場合
-        if (collision.gameObject.CompareTag("Slope"))
-        {
-            isGrounded = true;  // 地面に戻ったら再びジャンプ可能にする
-            Yspeed = 0.0f;
-            rb.gravityScale = 0.5f;
+            isGrounded = true;  // 地面に接触したらジャンプ可能にする
+            rb.gravityScale = collision.gameObject.CompareTag("Ground") ? 10.0f : 0.3f;  // Slopeの場合には異なる重力を設定
         }
     }
 
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        // プレイヤーが地面から離れた場合
+        if (collision.gameObject.CompareTag("Ground") || collision.gameObject.CompareTag("Slope"))
+        {
+            isGrounded = false;  // 地面から離れたらジャンプ不可にする
+        }
+    }
+
+    void UpdateAnimation()
+    {
+        // 現在のステート名を取得
+        AnimatorClipInfo[] clipInfo = animator.GetCurrentAnimatorClipInfo(0);
+        string clipName = clipInfo[0].clip.name;
+
+        float horizontal = Input.GetAxisRaw("Horizontal");
+        // ----- 進行方向に合わせて画像を反転する -----
+        {
+            if (horizontal > 0.0f)
+            {
+                Vector3 scale = transform.localScale;
+                scale.x = scale.x > 0.0f ? scale.x : scale.x * -1;
+                transform.localScale = scale;
+            }
+            else if (horizontal < 0.0f)
+            {
+                Vector3 scale = transform.localScale;
+                scale.x = scale.x < 0.0f ? scale.x : scale.x * -1;
+                transform.localScale = scale;
+            }
+        }
+
+        // 空中にいる
+        if (isGrounded == false)
+        {
+            // 現在JumpState
+            if (isJump)
+            {
+                AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+                if (stateInfo.IsName("Jump"))
+                {
+                    if (stateInfo.normalizedTime >= 0.7f)
+                    {
+                        isJump = false;
+                        animator.PlayInFixedTime("Fall", 0);
+                    }
+                }
+            }
+
+            return;
+        }
+
+        // 現在ダッシュ中のためここで終了
+        if (isDashing) return;
+
+        // 移動なし
+        if (horizontal == 0.0f)
+        {
+            // 現在のステートがIdleではないときに各項目設定
+            if (clipName != "Idle")
+            {
+                // 現在のアニメーションを終了しIdleのアニメーションを流す
+                animator.PlayInFixedTime("Idle", 0);
+            }
+        }
+        // 右方向に移動
+        else if (horizontal > 0.0f)
+        {
+            // 現在の進行方向が右でないとき、
+            // RunStateではないときに各項目を設定する
+            if (direction != true || clipName != "Run")
+            {
+                // 現在のアニメーションを終了しRunのアニメーションを流す
+                animator.PlayInFixedTime("Run", 0);
+
+                // 進行方向を右に設定する
+                direction = true;
+            }
+        }
+        // 左方向に移動
+        else
+        {
+            // 現在の進行方向が左でないとき、
+            // RunStateではないときに各項目を設定する
+            if (direction != false || clipName != "Run")
+            {
+                // 現在のアニメーションを終了しRunのアニメーションを流す
+                animator.PlayInFixedTime("Run", 0);
+
+                // 進行方向を左に設定する
+                direction = false;
+            }
+        }
+    }
 
     void UpdateUI()
     {
@@ -143,8 +246,6 @@ public class PlayerController : MonoBehaviour
         ApplyLeftArrow();
         ApplyShiftKey();
         ApplySpaceKey();
-
-
     }
 
     void ApplyDownArrow()
@@ -190,14 +291,11 @@ public class PlayerController : MonoBehaviour
             uiButton[(int)Button.Space].ButtonRelease();
     }
 
-    public void Death(bool death)
+    public void Death()
     {
-       if(death)
-        {
-            Reset();
-        }
+        PlayerReset();
     }
-    private void Reset()
+    private void PlayerReset()
     {
         this.transform.position = Vector3.zero;
     }
