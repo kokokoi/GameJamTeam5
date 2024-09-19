@@ -24,6 +24,7 @@ public class PlayerController : MonoBehaviour
     float DashCoolTime;
     float DashTime;
 
+
     bool isDashing = false;
     bool isMovingHorizontally=false;
 
