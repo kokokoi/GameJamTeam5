@@ -9,8 +9,10 @@ public class UITimer : MonoBehaviour
     public float timerRemaining = 0;
     public bool timeIsRunning = true;
     public TMP_Text timeText;
-    public float minutes = 0;
-    public float seconds = 0;
+
+    public static float minutes = 0;
+    public static float seconds = 0;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -36,5 +38,15 @@ public class UITimer : MonoBehaviour
         minutes = Mathf.FloorToInt(timeToDisplay / 60);
         seconds = Mathf.FloorToInt(timeToDisplay % 60);
         timeText.text = string.Format("{0:00} : {1:00}", minutes, seconds);
+    }
+
+    public static float GetMinutes()
+    {
+        return minutes;
+    }
+
+    public static float GetSeconds()
+    {
+        return seconds;
     }
 }
