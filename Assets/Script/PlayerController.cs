@@ -24,19 +24,19 @@ public class PlayerController : MonoBehaviour
     float DashCoolTime;
     float DashTime;
 
-
     bool isDashing = false;
-    bool isMovingHorizontally=false;
+    bool isMovingHorizontally = false;
 
     //ジャンプ関連
-    [SerializeField] bool isGrounded = true;//地面にいるかどうか
+    [SerializeField] bool isGrounded ;//地面にいるかどうか
     Rigidbody2D rb;
 
-    Animator animator;
-    bool direction;
-    bool isJump_;
-
     Vector3 targetPosition;
+
+    Animator animator;
+    bool isJump;
+    bool direction;
+
 
     public enum Button
     {
@@ -54,11 +54,13 @@ public class PlayerController : MonoBehaviour
         currentSpeed = speed;
 
         //RigidBody2dコンポーネントを取得
-        rb=GetComponent<Rigidbody2D>();
+        rb = GetComponent<Rigidbody2D>();
         DashCoolTime = 0f;
         DashTime = 0f;
         Alive = true;
-     }
+
+        animator = GetComponent<Animator>();
+    }
 
     // Update is called once per frame
     void Update()
@@ -71,8 +73,6 @@ public class PlayerController : MonoBehaviour
             isDashing = true;
             DashTime = dashTime;
             DashCoolTime = dashCoolTime;
-
-            animator.PlayInFixedTime("Dush", 0);
 
             // 目標位置を計算してダッシュのために移動を開始
             targetPosition = transform.position + new Vector3(x, y, 0) * dashSpeed * dashTime;
@@ -111,36 +111,36 @@ public class PlayerController : MonoBehaviour
             rb.AddForce(new Vector2(0, jumpPower), ForceMode2D.Impulse);
             isGrounded = false;
 
+            // ジャンプフラグを立てる
+            isJump = true;
             animator.PlayInFixedTime("Jump", 0);
         }
 
         DashCoolTime -= Time.deltaTime;
 
-        UpdateAnimation();  
+        UpdateAnimation();
 
         UpdateUI();
     }
 
-    //地面との接触を判定する関数（例としてOnCollisionEnter2Dを使用）
-    private void OnCollisionStay2D(Collision2D collision)
+    //地面との接触を判定する関数（OnCollisionEnter2DとOnCollisionExit2Dを使用）
+    private void OnCollisionEnter2D(Collision2D collision)
     {
-        Debug.Log(isGrounded);
-
-
         // プレイヤーが地面に接触している場合
-        if (collision.gameObject.CompareTag("Ground"))
+        if (collision.gameObject.CompareTag("Ground") || collision.gameObject.CompareTag("Slope"))
         {
-            isGrounded = true;  // 地面に戻ったら再びジャンプ可能にする
+            isGrounded = true;  // 地面に接触したらジャンプ可能にする
             Yspeed = 0.0f;
-            rb.gravityScale = 10.0f;
-            rb.AddForce(collision.contacts[0].normal * -1 * 20);
+            rb.gravityScale = collision.gameObject.CompareTag("Ground") ? 10.0f : 0.3f;  // Slopeの場合には異なる重力を設定
         }
-        // プレイヤーが地面に接触している場合
-        if (collision.gameObject.CompareTag("Slope"))
+    }
+
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        // プレイヤーが地面から離れた場合
+        if (collision.gameObject.CompareTag("Ground") || collision.gameObject.CompareTag("Slope"))
         {
-            isGrounded = true;  // 地面に戻ったら再びジャンプ可能にする
-            Yspeed = 0.0f;
-            rb.gravityScale = 0.5f;
+            isGrounded = false;  // 地面から離れたらジャンプ不可にする
         }
     }
 
@@ -171,14 +171,14 @@ public class PlayerController : MonoBehaviour
         if (isGrounded == false)
         {
             // 現在JumpState
-            if (isJump_)
+            if (isJump)
             {
                 AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
                 if (stateInfo.IsName("Jump"))
                 {
                     if (stateInfo.normalizedTime >= 0.7f)
                     {
-                        isJump_ = false;
+                        isJump = false;
                         animator.PlayInFixedTime("Fall", 0);
                     }
                 }
@@ -238,8 +238,6 @@ public class PlayerController : MonoBehaviour
         ApplyLeftArrow();
         ApplyShiftKey();
         ApplySpaceKey();
-
-
     }
 
     void ApplyDownArrow()
@@ -285,14 +283,13 @@ public class PlayerController : MonoBehaviour
             uiButton[(int)Button.Space].ButtonRelease();
     }
 
-    public void Death(bool death)
+    public void Death()
     {
-       if(death)
-        {
-            Reset();
-        }
+
+            PlayerReset();
+        
     }
-    private void Reset()
+    private void PlayerReset()
     {
         this.transform.position = Vector3.zero;
     }

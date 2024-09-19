@@ -8,21 +8,22 @@ public class TrapScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
         PlayerController controller = collision.GetComponent<PlayerController>();
-      //  if(controller!=null)
-      //  {
-            //É_ÉÅÅ[ÉWÇó^Ç¶ÇÈ
-          //  controller.Death();
+        if (controller != null)
+        {
+            controller.Death();
+        }
     }
+
 }
