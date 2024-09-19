@@ -1,6 +1,9 @@
+using DG.Tweening.Core.Easing;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.U2D.Path;
 using UnityEngine;
+
 
 public class PlayerController : MonoBehaviour
 {
@@ -8,6 +11,14 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float speed, dashSpeed;
     [SerializeField] float dashCoolTime;
     [SerializeField] float jumpPower;
+
+    private Animator animator;        // アニメーター
+    private bool direction; // 進行方向.右:true,左:false
+
+    bool isMove_;
+    bool isDash_;
+    bool isJump_;
+
 
     //現在のスピードを保持しておく本数
     float currentSpeed;
@@ -35,14 +46,18 @@ public class PlayerController : MonoBehaviour
         currentSpeed = speed;
 
         //RigidBody2dコンポーネントを取得
-        rb=GetComponent<Rigidbody2D>();
-     }
+        rb = GetComponent<Rigidbody2D>();
+
+        // Animator取得
+        animator = GetComponent<Animator>();
+        direction = true;
+    }
 
     // Update is called once per frame
     void Update()
     {
         // 水平方向（横向き）の入力受け取り
-        float x = Input.GetAxisRaw("Horizontal");
+        float x = Input.GetAxisRaw("Horizontal");        
 
         // ダッシュ処理
         if (Input.GetKey(KeyCode.LeftShift))
@@ -55,6 +70,10 @@ public class PlayerController : MonoBehaviour
             if (DashCoolTime <= 0)
             {
                 currentSpeed = dashSpeed;
+
+                // ダッシュのフラグを立てる(アニメーションも切り替える)
+                isDash_ = true;
+                animator.PlayInFixedTime("Dash", 0);
             }
             DashCoolTime = dashCoolTime;
         }
@@ -75,7 +94,18 @@ public class PlayerController : MonoBehaviour
             // Rigidbodyに上方向の力を加えてジャンプする
             rb.AddForce(new Vector2(0, jumpPower), ForceMode2D.Impulse);
             isGrounded = false; // ジャンプ中は地面にいないと判定
+
+            // 現在ダッシュ中ではない
+            if (isDash_ == false)
+            {
+                // ジャンプのフラグを立てる(アニメーションも切り替える)
+                isJump_ = true;
+                animator.PlayInFixedTime("Jump", 0);
+            }
         }
+
+        // Animator更新
+        UpdateAnimation();
 
         UpdateUI();
     }
@@ -90,6 +120,108 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    // アニメーション更新
+    void UpdateAnimation()
+    {
+        // 現在のステート名を取得
+        AnimatorClipInfo[] clipInfo = animator.GetCurrentAnimatorClipInfo(0);
+        string clipName = clipInfo[0].clip.name;
+
+        float horizontal = Input.GetAxisRaw("Horizontal");
+        // ----- 進行方向に合わせて画像を反転する -----
+        {
+            if (horizontal > 0.0f)
+            {
+                Vector3 scale = transform.localScale;
+                scale.x = scale.x > 0.0f ? scale.x : scale.x * -1;
+                transform.localScale = scale;
+            }
+            else if(horizontal < 0.0f)
+            {
+                Vector3 scale = transform.localScale;
+                scale.x = scale.x < 0.0f ? scale.x : scale.x * -1;
+                transform.localScale = scale;
+            }
+        }
+
+        // 空中にいる
+        if (isGrounded == false)
+        {
+            // 現在JumpState
+            if (isJump_)
+            {
+                AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+                if (stateInfo.IsName("Jump"))
+                {
+                    if (stateInfo.normalizedTime >= 0.7f)
+                    {
+                        isJump_ = false;
+                        animator.PlayInFixedTime("Fall", 0);
+                    }
+                }
+            }
+
+            return;
+        }
+
+
+        // ダッシュの速度がなくなったらモーションを終了する
+        if(currentSpeed <= speed && isDash_ == true)
+        {
+            isDash_ = false;
+        }
+
+        // 現在ダッシュ中のためここで終了
+        if (isDash_) return;
+
+        // 移動なし
+        if (horizontal == 0.0f)
+        {
+            // 現在のステートがIdleではないときに各項目設定
+            if (clipName != "Idle")
+            {
+                // 現在のアニメーションを終了しIdleのアニメーションを流す
+                animator.PlayInFixedTime("Idle", 0);
+
+                // 移動フラグを下げる
+                isMove_ = false;
+            }
+        }
+        // 右方向に移動
+        else if (horizontal > 0.0f)
+        {
+            // 現在の進行方向が右でないとき、
+            // RunStateではないときに各項目を設定する
+            if (direction != true || clipName != "Run")
+            {
+                // 現在のアニメーションを終了しRunのアニメーションを流す
+                animator.PlayInFixedTime("Run", 0);
+
+                // 進行方向を右に設定する
+                direction = true;
+
+                // 移動フラグを立てる
+                isMove_ = true;
+            }
+        }
+        // 左方向に移動
+        else
+        {
+            // 現在の進行方向が左でないとき、
+            // RunStateではないときに各項目を設定する
+            if (direction != false || clipName != "Run")
+            {
+                // 現在のアニメーションを終了しRunのアニメーションを流す
+                animator.PlayInFixedTime("Run", 0);
+
+                // 進行方向を左に設定する
+                direction = false;
+
+                // 移動フラグを立てる
+                isMove_ = true;
+            }
+        }
+    }
 
     void UpdateUI()
     {
