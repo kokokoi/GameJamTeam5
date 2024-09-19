@@ -8,11 +8,12 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float speed, dashSpeed;
     [SerializeField] float dashCoolTime;
     [SerializeField] float jumpPower;
+    [SerializeField] float Yspeed;
+
 
     //現在のスピードを保持しておく本数
     float currentSpeed;
     float DashCoolTime;
-    float Yspeed;
 
     //ジャンプ関連
     [SerializeField] bool isGrounded = true;//地面にいるかどうか
@@ -43,20 +44,39 @@ public class PlayerController : MonoBehaviour
     {
         // 水平方向（横向き）の入力受け取り
         float x = Input.GetAxisRaw("Horizontal");
+        float y = 0;
 
-        // ダッシュ処理
+
         if (Input.GetKey(KeyCode.LeftShift))
         {
-            if(Input.GetKey(KeyCode.UpArrow)||Input.GetKey(KeyCode.W))
+            // 上下方向の入力を受け取る
+            if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W))
             {
-                Yspeed = dashSpeed;
+                y = 1; // 上方向
             }
-            // 通常スピードが早くなる
-            if (DashCoolTime <= 0)
+
+            if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S))
             {
+                y = -1; // 下方向
+            }
+        }
+
+
+        if (DashCoolTime <= 0)
+        {
+            // ダッシュ処理
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
+                // 通常スピードが早くなる
                 currentSpeed = dashSpeed;
+                DashCoolTime = dashCoolTime;
+
+                // Y方向のスピードもダッシュスピードにする
+                if (y != 0)
+                {
+                   y= dashSpeed * Yspeed;  // 上下方向にもダッシュ
+                }
             }
-            DashCoolTime = dashCoolTime;
         }
 
         // ダッシュのクールタイム処理
@@ -67,7 +87,7 @@ public class PlayerController : MonoBehaviour
         DashCoolTime -= 1.0f;
 
         // 移動処理
-        transform.Translate(new Vector3(x, Yspeed, 0) * currentSpeed * Time.deltaTime);
+        transform.Translate(new Vector3(x, y, 0) * currentSpeed * Time.deltaTime);
 
         // スペースキーを押してジャンプする処理
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
@@ -87,6 +107,7 @@ public class PlayerController : MonoBehaviour
         if (collision.gameObject.CompareTag("Ground"))
         {
             isGrounded = true;  // 地面に戻ったら再びジャンプ可能にする
+            Yspeed = 0.0f;
         }
     }
 
