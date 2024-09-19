@@ -5,30 +5,72 @@ using UnityEngine.UI;
 
 public class UIButton : MonoBehaviour
 {
+    [SerializeField] private float showButtonSpeed;
+    [SerializeField] private float showButtonTimer;
+
     public Image image;
     public Image shadow;
 
+    public float ImageAlpha = 0.0f;
+    public float ShadowAlpha = 0.0f;
+    public float timer = 0.0f;
+
     public void ButtonDown()
     {
-        shadow.color = new Color(1.0f, 1.0f, 214.0f / 255.0f, 0.5f);
-        image.color = new Color(1.0f, 1.0f, 214.0f / 255.0f, 0.2f);
+        if (ImageAlpha <= 1.0f)
+        {
+            shadow.color = new Color(1.0f, 1.0f, 214.0f / 255.0f, 0.5f);
+            image.color = new Color(1.0f, 1.0f, 214.0f / 255.0f, 0.2f);
+        }
     }
 
     public void ButtonRelease()
     {
-        shadow.color = new Color(1.0f, 1.0f, 214.0f / 255.0f , 1.0f);
-        image.color = new Color(1.0f, 1.0f, 214.0f /255.0f, 0.5f);
+        if (ImageAlpha <= 1.0f)
+        {
+            shadow.color = new Color(1.0f, 1.0f, 214.0f / 255.0f, 1.0f);
+            image.color = new Color(1.0f, 1.0f, 214.0f / 255.0f, 0.5f);
+        }
+    }
+
+    public void ShowButton()
+    {
+        ShadowAlpha += Time.deltaTime * showButtonSpeed;
+        ImageAlpha += Time.deltaTime * showButtonSpeed;
+        if (ImageAlpha >= 1.0f)
+            ImageAlpha = 1.0f;
+        if (ShadowAlpha >= 0.5f)
+            ShadowAlpha = 0.5f;
+
+        shadow.color = new Color(1.0f, 1.0f, 214.0f / 255.0f, ImageAlpha);
+        image.color = new Color(1.0f, 1.0f, 214.0f / 255.0f, ShadowAlpha);
+
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        
+        shadow.color = new Color(1.0f, 1.0f, 214.0f / 255.0f, ImageAlpha);
+        image.color = new Color(1.0f, 1.0f, 214.0f / 255.0f, ShadowAlpha);
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        if (Time.time >= showButtonTimer)
+        {
+            if (ImageAlpha < 1.0f)
+            {
+                ShowButton();
+
+            }
+        }
+        else
+        {
+            shadow.color = new Color(1.0f, 1.0f, 214.0f / 255.0f, ImageAlpha);
+            image.color = new Color(1.0f, 1.0f, 214.0f / 255.0f, ShadowAlpha);
+        }
+
     }
 }
