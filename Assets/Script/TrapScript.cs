@@ -5,10 +5,11 @@ using UnityEngine;
 
 public class TrapScript : MonoBehaviour
 {
+    bool player_death;
     // Start is called before the first frame update
     void Start()
     {
-
+        player_death = false;
     }
 
     // Update is called once per frame
@@ -22,7 +23,8 @@ public class TrapScript : MonoBehaviour
         PlayerController controller = collision.GetComponent<PlayerController>();
         if (controller != null)
         {
-            controller.Death();
+            player_death = true;
+            controller.Death(player_death);
         }
     }
 

@@ -16,14 +16,21 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float deceleration;//減速度
     [SerializeField] float maxSpeed;//最高速度
     [SerializeField] float airControlFactor = 0.0f;//空中での操作制限
+    [SerializeField] float deathTimer;
 
     //現在のスピードを保持しておく本数
     float currentSpeed;
     float DashCoolTime;
     float DashTime;
 
+    //死んでからフラグとタイマー
+    public bool isDeath;
+    float DeathTimer;
+
     bool isDashing = false;
     bool isMovingHorizontally = false;
+
+
 
     //ジャンプ関連
     [SerializeField] bool isGrounded;//地面にいるかどうか
@@ -56,22 +63,25 @@ public class PlayerController : MonoBehaviour
         DashCoolTime = 0f;
         DashTime = 0f;
         animator = GetComponent<Animator>();
+        deathTimer = DeathTimer;
+        isDeath = false;
     }
 
     // Update is called once per frame
     void Update()
     {
+        PlayerUpdate();
+        ShakerUpdate();
+        UpdateAnimation();
+        UpdateUI();
+    }
+
+    void PlayerUpdate()
+    {
         float x = Input.GetAxis("Horizontal");
         float y = 0;
 
-        //上方向のダッシュ入力を取得
-        if(Input.GetKey(KeyCode.W))
-        {
-            if (Input.GetKey(KeyCode.LeftShift))
-            {
-                y = 1;
-            }
-        }
+
 
         if (DashCoolTime <= 0 && !isDashing && Input.GetKey(KeyCode.LeftShift))
         {
@@ -94,15 +104,22 @@ public class PlayerController : MonoBehaviour
                 });
         }
 
+        //上方向のダッシュ入力を取得
+        if (Input.GetKey(KeyCode.W)&&isDashing)
+        {
+            y = 1;     
+        }
+
         // ダッシュしていない場合は通常の移動処理
         if (!isDashing)
         {
-            float controlFactor = isGrounded ? 1.0f : airControlFactor;
+            float controlFactor = isGrounded ? 10.0f : airControlFactor;
 
             if (x != 0)
             {
                 currentSpeed += acceleration * Time.deltaTime * controlFactor;
                 currentSpeed = Mathf.Clamp(currentSpeed, 0, maxSpeed);
+                deceleration = 10.0f;
             }
             else
             {
@@ -127,10 +144,8 @@ public class PlayerController : MonoBehaviour
 
         DashCoolTime -= Time.deltaTime;
 
-        UpdateAnimation();
-
-        UpdateUI();
     }
+
 
     //地面との接触を判定する関数（OnCollisionEnter2DとOnCollisionExit2Dを使用）
     private void OnCollisionEnter2D(Collision2D collision)
@@ -149,6 +164,15 @@ public class PlayerController : MonoBehaviour
         if (collision.gameObject.CompareTag("Ground") || collision.gameObject.CompareTag("Slope"))
         {
             isGrounded = false;  // 地面から離れたらジャンプ不可にする
+        }
+    }
+
+    void ShakerUpdate()
+    {
+        if(isDashing)
+        {
+            var impulseSource = GetComponent<Cinemachine.CinemachineImpulseSource>();
+            impulseSource.GenerateImpulse();
         }
     }
 
@@ -291,9 +315,18 @@ public class PlayerController : MonoBehaviour
             uiButton[(int)Button.Space].ButtonRelease();
     }
 
-    public void Death()
+    public void Death(bool death)
     {
-        PlayerReset();
+
+        isDeath = death;
+        if (isDeath)
+        {
+            deathTimer -= 1*Time.deltaTime;
+        }
+        if (deathTimer <= 0)
+        {
+            PlayerReset();
+        }
     }
     private void PlayerReset()
     {
