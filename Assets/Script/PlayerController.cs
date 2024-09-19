@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,8 +7,21 @@ public class PlayerController : MonoBehaviour
 {
     //通常スピード、ダッシュスピードの変数宣言
     [SerializeField] float speed, dashSpeed;
+    [SerializeField] float dashCoolTime;
+    [SerializeField] float jumpPower;
+    [SerializeField] float Yspeed;
+    [SerializeField] float dashTime;
+
+
     //現在のスピードを保持しておく本数
     float currentSpeed;
+    float DashCoolTime;
+    float DashTime;
+
+    //ジャンプ関連
+    [SerializeField] bool isGrounded = true;//地面にいるかどうか
+    Rigidbody2D rb;
+
 
     public enum Button
     {
@@ -23,27 +37,98 @@ public class PlayerController : MonoBehaviour
         Application.targetFrameRate = 60;
         //現在のスピードをスピードに固定
         currentSpeed = speed;
+
+        //RigidBody2dコンポーネントを取得
+        rb=GetComponent<Rigidbody2D>();
      }
 
     // Update is called once per frame
     void Update()
     {
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
-        float jump = Input.GetAxis("Jump");
+        // 水平方向（横向き）の入力受け取り
+
+        float x = Input.GetAxisRaw("Horizontal");
+        float y = 0;
 
 
-        Vector2 position = transform.position;
-        position.x = position.x + 3.0f * horizontal*Time.deltaTime;
-        position.y = position.y + 3.0f * vertical * Time.deltaTime;
-        
-        position.y = position.y + 8.0f * jump * Time.deltaTime;
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+            // 上下方向の入力を受け取る
+            if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W))
+            {
+                y = 1; // 上方向
+            }
+
+            if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S))
+            {
+                y = -1; // 下方向
+            }
+        }
 
 
-        transform.position = position;
+        if (DashCoolTime <= 0)
+        {
+            // ダッシュ処理
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
+                DashTime = dashTime;
+                DashCoolTime = dashCoolTime;
+            }
+        }
+        if(DashTime>0)
+        {
+            // 通常スピードが早くなる
+            currentSpeed = dashSpeed;
+
+            // Y方向のスピードもダッシュスピードにする
+            if (y != 0)
+            {
+                y = dashSpeed * Yspeed;  // 上下方向にもダッシュ
+            }
+        }
+
+
+        // ダッシュのクールタイム処理
+        if (currentSpeed > speed)
+        {
+            currentSpeed -= 1.0f;
+        }
+
+
+        DashCoolTime -= 1.0f;
+        DashTime -= 1.0f;
+
+        // 移動処理
+        transform.Translate(new Vector3(x, y, 0) * currentSpeed * Time.deltaTime);
+
+        // スペースキーを押してジャンプする処理
+        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        {
+            // Rigidbodyに上方向の力を加えてジャンプする
+            rb.AddForce(new Vector2(0, jumpPower), ForceMode2D.Impulse);
+            isGrounded = false; // ジャンプ中は地面にいないと判定
+        }
+
+        rb.gravityScale = 10.0f;
 
         UpdateUI();
     }
+
+    //地面との接触を判定する関数（例としてOnCollisionEnter2Dを使用）
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        Debug.Log(isGrounded);
+
+
+        // プレイヤーが地面に接触している場合
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            isGrounded = true;  // 地面に戻ったら再びジャンプ可能にする
+            Yspeed = 0.0f;
+            rb.gravityScale = 0.5f;
+        }
+    }
+
 
     void UpdateUI()
     {

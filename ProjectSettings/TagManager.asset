@@ -5,7 +5,10 @@ TagManager:
   serializedVersion: 2
   tags:
   - Ground
+<<<<<<< HEAD
   - SoundManager
+=======
+>>>>>>> 18dd86270f1a9e09225628ee85af07f03377c103
   layers:
   - Default
   - TransparentFX
