@@ -3652,6 +3652,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   activeVolume: {fileID: 1428758395}
+  Reset: 0
+  LDScaleSpeed: 12
+  LDIntensitySpeed: 0.5
+  VIntensitySpeed: 0.3
+  VSmoothnessSpeed: 0.3
+  VRoundnessSpeed: 0.05
 --- !u!1 &1503179322
 GameObject:
   m_ObjectHideFlags: 0
