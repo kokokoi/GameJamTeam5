@@ -1,6 +1,8 @@
+using DG.Tweening;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -27,6 +29,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] bool isGrounded = true;//地面にいるかどうか
     Rigidbody2D rb;
 
+    Vector3 targetPosition;
 
     public enum Button
     {
@@ -52,96 +55,54 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // 水平方向（横向き）の入力受け取り
-
         float x = Input.GetAxisRaw("Horizontal");
         float y = 0;
 
-
-        if (Input.GetKey(KeyCode.LeftShift))
+        if (DashCoolTime <= 0 && !isDashing && Input.GetKey(KeyCode.LeftShift))
         {
-            // 上下方向の入力を受け取る
-            if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W))
-            {
-                y = 1; // 上方向
-            }
+            isDashing = true;
+            DashTime = dashTime;
+            DashCoolTime = dashCoolTime;
 
-            if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S))
-            {
-                y = -1; // 下方向
-            }
+            // 目標位置を計算してダッシュのために移動を開始
+            targetPosition = transform.position + new Vector3(x, y, 0) * dashSpeed * dashTime;
+
+            // イージングを使って移動
+            transform.DOMove(targetPosition, dashTime)
+                .SetEase(Ease.OutQuad) // Ease設定（自由に変更可能）
+                .OnComplete(() =>
+                {
+                    isDashing = false; // ダッシュ終了
+                    currentSpeed = speed; // 通常スピードに戻す
+                });
         }
 
-
-        if (DashCoolTime <= 0 && !isDashing) 
-        {
-            if(Input.GetKey(KeyCode.LeftShift))
-            {
-                isDashing = true;
-                DashTime = dashTime;
-                DashCoolTime = dashCoolTime;
-                currentSpeed = dashSpeed;
-            }
-        }
-
-        // ダッシュ中の処理
-        if (isDashing)
-        {
-            DashTime -= Time.deltaTime;  // ダッシュ時間を減らす
-
-            // ダッシュが終了したら通常速度に戻す
-            if (DashTime <= 0)
-            {
-                isDashing = false;
-            }
-        }
-
-        // ダッシュしていないときに加速度を使用した通常移動処理
+        // ダッシュしていない場合は通常の移動処理
         if (!isDashing)
         {
-            if (x != 0) // プレイヤーが左右に動いているとき
+            if (x != 0)
             {
-                // 加速度に基づいてスピードを増加させる
                 currentSpeed += acceleration * Time.deltaTime;
-                currentSpeed = Mathf.Clamp(currentSpeed, 0, maxSpeed);  // 最高速度に制限
+                currentSpeed = Mathf.Clamp(currentSpeed, 0, maxSpeed);
             }
             else
             {
-                // プレイヤーが動いていないときは減速させる
                 currentSpeed -= deceleration * Time.deltaTime;
-                currentSpeed = Mathf.Clamp(currentSpeed, 0,maxSpeed);  // 最低速度は0に制限
+                currentSpeed = Mathf.Clamp(currentSpeed, 0, maxSpeed);
             }
+
+            // 通常の移動（イージングなし）
+            transform.Translate(new Vector3(x, y, 0) * currentSpeed * Time.deltaTime);
         }
 
-        // キー入力に関わらず、ダッシュ中はダッシュスピードで移動を続ける
-        transform.Translate(new Vector3(x, y, 0) * currentSpeed * Time.deltaTime);
-
-        // スペースキーを押してジャンプする処理
+        // スペースキーでジャンプ処理
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
             rb.AddForce(new Vector2(0, jumpPower), ForceMode2D.Impulse);
             isGrounded = false;
         }
 
-        // クールタイムを減らす
         DashCoolTime -= Time.deltaTime;
-
-
-
-        // スペースキーを押してジャンプする処理
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
-        {
-            // Rigidbodyに上方向の力を加えてジャンプする
-            rb.AddForce(new Vector2(0, jumpPower), ForceMode2D.Impulse);
-            isGrounded = false; // ジャンプ中は地面にいないと判定
-        }
-
-        if (!isGrounded)
-        {
-            rb.gravityScale = 10.0f;
-        }
-
-        isGrounded = false;
 
         UpdateUI();
     }
@@ -223,6 +184,11 @@ public class PlayerController : MonoBehaviour
             uiButton[(int)Button.Space].ButtonDown();
         else
             uiButton[(int)Button.Space].ButtonRelease();
+    }
+
+    void Restart()
+    {
+        this.transform.position = Vector3.zero;
     }
 
 }
