@@ -47,9 +47,7 @@ public class PlayerController : MonoBehaviour
     {
         // 水平方向（横向き）の入力受け取り
 
-            float x = Input.GetAxisRaw("Horizontal");
-
-        
+        float x = Input.GetAxisRaw("Horizontal");
         float y = 0;
 
 
@@ -111,17 +109,23 @@ public class PlayerController : MonoBehaviour
             isGrounded = false; // ジャンプ中は地面にいないと判定
         }
 
+        rb.gravityScale = 10.0f;
+
         UpdateUI();
     }
 
     //地面との接触を判定する関数（例としてOnCollisionEnter2Dを使用）
-    private void OnCollisionEnter2D(Collision2D collision)
+    private void OnCollisionStay2D(Collision2D collision)
     {
+        Debug.Log(isGrounded);
+
+
         // プレイヤーが地面に接触している場合
         if (collision.gameObject.CompareTag("Ground"))
         {
             isGrounded = true;  // 地面に戻ったら再びジャンプ可能にする
             Yspeed = 0.0f;
+            rb.gravityScale = 0.5f;
         }
     }
 
