@@ -125,6 +125,8 @@ MonoBehaviour:
   dashSpeed: 30
   dashCoolTime: 20
   jumpPower: 20
+  Yspeed: 0
+  dashTime: 0
   isGrounded: 1
   uiButton:
   - {fileID: 0}
