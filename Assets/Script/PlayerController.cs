@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,11 +10,13 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float dashCoolTime;
     [SerializeField] float jumpPower;
     [SerializeField] float Yspeed;
+    [SerializeField] float dashTime;
 
 
     //現在のスピードを保持しておく本数
     float currentSpeed;
     float DashCoolTime;
+    float DashTime;
 
     //ジャンプ関連
     [SerializeField] bool isGrounded = true;//地面にいるかどうか
@@ -43,7 +46,10 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         // 水平方向（横向き）の入力受け取り
-        float x = Input.GetAxisRaw("Horizontal");
+
+            float x = Input.GetAxisRaw("Horizontal");
+
+        
         float y = 0;
 
 
@@ -67,24 +73,32 @@ public class PlayerController : MonoBehaviour
             // ダッシュ処理
             if (Input.GetKey(KeyCode.LeftShift))
             {
-                // 通常スピードが早くなる
-                currentSpeed = dashSpeed;
+                DashTime = dashTime;
                 DashCoolTime = dashCoolTime;
-
-                // Y方向のスピードもダッシュスピードにする
-                if (y != 0)
-                {
-                   y= dashSpeed * Yspeed;  // 上下方向にもダッシュ
-                }
             }
         }
+        if(DashTime>0)
+        {
+            // 通常スピードが早くなる
+            currentSpeed = dashSpeed;
+
+            // Y方向のスピードもダッシュスピードにする
+            if (y != 0)
+            {
+                y = dashSpeed * Yspeed;  // 上下方向にもダッシュ
+            }
+        }
+
 
         // ダッシュのクールタイム処理
         if (currentSpeed > speed)
         {
             currentSpeed -= 1.0f;
         }
+
+
         DashCoolTime -= 1.0f;
+        DashTime -= 1.0f;
 
         // 移動処理
         transform.Translate(new Vector3(x, y, 0) * currentSpeed * Time.deltaTime);
