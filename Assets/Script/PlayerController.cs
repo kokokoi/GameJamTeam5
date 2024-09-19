@@ -53,15 +53,15 @@ public class PlayerController : MonoBehaviour
         //現在のスピードをスピードに固定
         currentSpeed = speed;
 
+        //RigidBody2dコンポーネントを取得
+        rb=GetComponent<Rigidbody2D>();
+        DashCoolTime = 0f;
+        DashTime = 0f;
 
         // Animator取得
         animator = GetComponent<Animator>();
         direction = true;
    
-        //RigidBody2dコンポーネントを取得
-        rb=GetComponent<Rigidbody2D>();
-        DashCoolTime = 0f;
-        DashTime = 0f;
      }
 
     // Update is called once per frame
@@ -134,13 +134,6 @@ public class PlayerController : MonoBehaviour
         // キー入力に関わらず、ダッシュ中はダッシュスピードで移動を続ける
         transform.Translate(new Vector3(x, y, 0) * currentSpeed * Time.deltaTime);
 
-        // スペースキーを押してジャンプする処理
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
-        {
-            rb.AddForce(new Vector2(0, jumpPower), ForceMode2D.Impulse);
-            isGrounded = false;
-        }
-
         // クールタイムを減らす
         DashCoolTime -= Time.deltaTime;
 
@@ -168,8 +161,7 @@ public class PlayerController : MonoBehaviour
             rb.gravityScale = 10.0f;
         }
 
-        isGrounded = false;
-
+        
         // Animator更新
         UpdateAnimation();
 
