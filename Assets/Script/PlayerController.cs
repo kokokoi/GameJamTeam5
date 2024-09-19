@@ -7,8 +7,6 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public bool Alive = true;
-
     //通常スピード、ダッシュスピードの変数宣言
     [SerializeField] float speed, dashSpeed;
     [SerializeField] float dashCoolTime;
@@ -18,6 +16,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float acceleration;//加速度
     [SerializeField] float deceleration;//減速度
     [SerializeField] float maxSpeed;//最高速度
+    [SerializeField] float airControlFactor = 0.0f;//空中での操作制限
 
     //現在のスピードを保持しておく本数
     float currentSpeed;
@@ -28,7 +27,7 @@ public class PlayerController : MonoBehaviour
     bool isMovingHorizontally = false;
 
     //ジャンプ関連
-    [SerializeField] bool isGrounded ;//地面にいるかどうか
+    [SerializeField] bool isGrounded;//地面にいるかどうか
     Rigidbody2D rb;
 
     Vector3 targetPosition;
@@ -57,15 +56,13 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         DashCoolTime = 0f;
         DashTime = 0f;
-        Alive = true;
-
         animator = GetComponent<Animator>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        float x = Input.GetAxisRaw("Horizontal");
+        float x = Input.GetAxis("Horizontal");
         float y = 0;
 
         if (DashCoolTime <= 0 && !isDashing && Input.GetKey(KeyCode.LeftShift))
@@ -90,14 +87,16 @@ public class PlayerController : MonoBehaviour
         // ダッシュしていない場合は通常の移動処理
         if (!isDashing)
         {
+            float controlFactor = isGrounded ? 1.0f : airControlFactor;
+
             if (x != 0)
             {
-                currentSpeed += acceleration * Time.deltaTime;
+                currentSpeed += acceleration * Time.deltaTime * controlFactor;
                 currentSpeed = Mathf.Clamp(currentSpeed, 0, maxSpeed);
             }
             else
             {
-                currentSpeed -= deceleration * Time.deltaTime;
+                currentSpeed -= deceleration * Time.deltaTime * controlFactor;
                 currentSpeed = Mathf.Clamp(currentSpeed, 0, maxSpeed);
             }
 
@@ -130,7 +129,6 @@ public class PlayerController : MonoBehaviour
         if (collision.gameObject.CompareTag("Ground") || collision.gameObject.CompareTag("Slope"))
         {
             isGrounded = true;  // 地面に接触したらジャンプ可能にする
-            Yspeed = 0.0f;
             rb.gravityScale = collision.gameObject.CompareTag("Ground") ? 10.0f : 0.3f;  // Slopeの場合には異なる重力を設定
         }
     }
@@ -285,9 +283,7 @@ public class PlayerController : MonoBehaviour
 
     public void Death()
     {
-
-            PlayerReset();
-        
+        PlayerReset();
     }
     private void PlayerReset()
     {
