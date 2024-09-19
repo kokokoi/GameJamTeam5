@@ -67,7 +67,10 @@ public class PlayerController : MonoBehaviour
         //ã•ûŒü‚Ìƒ_ƒbƒVƒ…“ü—Í‚ğæ“¾
         if(Input.GetKey(KeyCode.W))
         {
-
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
+                y = 1;
+            }
         }
 
         if (DashCoolTime <= 0 && !isDashing && Input.GetKey(KeyCode.LeftShift))
