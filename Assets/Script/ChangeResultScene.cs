@@ -5,8 +5,12 @@ using UnityEngine.SceneManagement;
 
 public class ChangeResultScene : MonoBehaviour
 {
-    public void OnClickResultButton()
+    void Update()
     {
-        SceneManager.LoadScene("ResultScene");
+        if (Input.GetKey(KeyCode.S))
+        {
+            SceneManager.LoadScene("ResultScene");
+        }
     }
+    
 }
