@@ -24,6 +24,6 @@ EditorBuildSettings:
     path: Assets/Scenes/TitleScene.unity
     guid: 0827e0da39b71c04bbdf7fe8fb8414ec
   - enabled: 1
-    path: Assets/Scenes/Yamamoto.unity
+    path: Assets/Scenes/Stage/Yamamoto.unity
     guid: 9b432c2a1b85b674eb5c68e73a5b72c8
   m_configObjects: {}
