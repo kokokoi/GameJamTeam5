@@ -16,6 +16,8 @@ public class ChangeScene : MonoBehaviour
     //public Sprite titleSprite;
     private float buttonReleaseTimer = 1;
 
+    bool isPlayed = false;
+
     public void OnClickStartButton()
    {
 
