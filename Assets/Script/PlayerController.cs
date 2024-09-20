@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static UnityEngine.RuleTile.TilingRuleOutput;
 
 public class PlayerController : MonoBehaviour
 {
@@ -59,6 +60,7 @@ public class PlayerController : MonoBehaviour
 
     private ParticleSystem particleSystem_;
     private ParticleSystem goalParticle;
+    private ParticleSystem goalParticle0;
 
     public enum Button
     {
@@ -93,6 +95,10 @@ public class PlayerController : MonoBehaviour
         GameObject goalParticleObject = GameObject.Find("GoalParticle");
         goalParticle = goalParticleObject.GetComponent<ParticleSystem>();
         goalParticle.Stop();
+
+        goalParticleObject = GameObject.Find("GoalParticle0");
+        goalParticle0 = goalParticleObject.GetComponent<ParticleSystem>();
+        goalParticle0.Stop();
     }
 
     // Update is called once per frame
@@ -421,8 +427,17 @@ public class PlayerController : MonoBehaviour
             currentClearTimer = clearTimer;
 
             // GoalParticleÇê∂ê¨
-            goalParticle.transform.position = transform.position;
+            Vector3 goalParticlePosition = transform.position;
+            goalParticlePosition.x = -2;
+            goalParticlePosition.y = 2;
+            Vector3 goalParticlePosition0 = transform.position;
+            goalParticlePosition0.x = 2;
+            goalParticlePosition0.y = 4;
+
+            goalParticle.transform.position = goalParticlePosition;
+            goalParticle0.transform.position = goalParticlePosition0;
             goalParticle.Play();
+            goalParticle0.Play();
         }
     }
 
