@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static UnityEngine.RuleTile.TilingRuleOutput;
 
 public class PlayerController : MonoBehaviour
 {
@@ -57,6 +58,9 @@ public class PlayerController : MonoBehaviour
 
     public Afterimage afterimage;
 
+    private ParticleSystem particleSystem_;
+    private ParticleSystem goalParticle;
+    private ParticleSystem goalParticle0;
 
     public enum Button
     {
@@ -82,6 +86,19 @@ public class PlayerController : MonoBehaviour
         isClear = false;
         currentDeathTimer = deathTimer;
         currentClearTimer = clearTimer;
+
+        // Find Death ParticleSystem
+        GameObject particleObject = GameObject.Find("DeathParticle");
+        particleSystem_ = particleObject.GetComponent<ParticleSystem>();
+        particleSystem_.Stop();
+
+        GameObject goalParticleObject = GameObject.Find("GoalParticle");
+        goalParticle = goalParticleObject.GetComponent<ParticleSystem>();
+        goalParticle.Stop();
+
+        goalParticleObject = GameObject.Find("GoalParticle0");
+        goalParticle0 = goalParticleObject.GetComponent<ParticleSystem>();
+        goalParticle0.Stop();
     }
 
     // Update is called once per frame
@@ -100,12 +117,26 @@ public class PlayerController : MonoBehaviour
 
         if (isDeath)
         {
+            // Check Animation End
+            AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+            if (stateInfo.IsName("Death"))
+            {
+                if (stateInfo.normalizedTime >= 0.8f)
+                {
+                    // Stop Animation
+                    animator.speed = 0;
+                }
+            }
 
             // カメラがまだ振動していないなら、一回だけ振動させる
             if (!hasShaken)
             {
                 animator.PlayInFixedTime("Death", 0);
-               
+
+                // Play ParticleSystem
+                particleSystem_.transform.position = transform.position;
+                particleSystem_.Play();
+
                 shaker.ShakeCamera();
               //  fadeScript.StartFade();
                 hasShaken = true; // 振動させたのでフラグを立てる
@@ -126,6 +157,8 @@ public class PlayerController : MonoBehaviour
         {
             //プレイヤーの速度を０にする
             rb.velocity = Vector2.zero;
+            animator.PlayInFixedTime("Attack", 0);
+
 
             currentClearTimer -= Time.deltaTime;
             if (currentClearTimer <= 0)
@@ -392,6 +425,19 @@ public class PlayerController : MonoBehaviour
         if(isClear)
         {
             currentClearTimer = clearTimer;
+
+            // GoalParticleを生成
+            Vector3 goalParticlePosition = transform.position;
+            goalParticlePosition.x = -2;
+            goalParticlePosition.y = 2;
+            Vector3 goalParticlePosition0 = transform.position;
+            goalParticlePosition0.x = 2;
+            goalParticlePosition0.y = 4;
+
+            goalParticle.transform.position = goalParticlePosition;
+            goalParticle0.transform.position = goalParticlePosition0;
+            goalParticle.Play();
+            goalParticle0.Play();
         }
     }
 
@@ -410,6 +456,12 @@ public class PlayerController : MonoBehaviour
     private void PlayerReset()
     {
         this.transform.position = Vector3.zero;
+
+        // アニメーションを設定
+        animator.PlayInFixedTime("Idle", 0);
+
+        // アニメーション再生速度設定
+        animator.speed = 1.0f;
     }
 
 }
