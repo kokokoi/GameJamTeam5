@@ -17,6 +17,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float maxSpeed;//最高速度
     [SerializeField] float airControlFactor = 0.0f;//空中での操作制限
     [SerializeField] float deathTimer;
+    [SerializeField] float clearTimer;
 
     //現在のスピードを保持しておく本数
     float currentSpeed;
@@ -27,6 +28,9 @@ public class PlayerController : MonoBehaviour
     public bool isDeath;
     float currentDeathTimer;
 
+    public bool isClear;
+    float currentClearTimer;
+
     public bool isDashing = false;
     bool isMovingHorizontally = false;
 
@@ -34,6 +38,7 @@ public class PlayerController : MonoBehaviour
 
     public Shaker shaker;
 
+   // public PlayerDeathFadeScript fadeScript;
 
     //ジャンプ関連
     [SerializeField] bool isGrounded;//地面にいるかどうか
@@ -69,7 +74,9 @@ public class PlayerController : MonoBehaviour
         DashTime = 0f;
         animator = GetComponent<Animator>();
         isDeath = false;
+        isClear = false;
         currentDeathTimer = deathTimer;
+        currentClearTimer = clearTimer;
     }
 
     // Update is called once per frame
@@ -80,10 +87,14 @@ public class PlayerController : MonoBehaviour
 
         if (isDeath)
         {
+
             // カメラがまだ振動していないなら、一回だけ振動させる
             if (!hasShaken)
             {
+                animator.PlayInFixedTime("Death", 0);
+               
                 shaker.ShakeCamera();
+              //  fadeScript.StartFade();
                 hasShaken = true; // 振動させたのでフラグを立てる
             }
 
@@ -98,11 +109,23 @@ public class PlayerController : MonoBehaviour
                 hasShaken = false; // リセット時に振動フラグもリセットする
             }
         }
+        else if(isClear)
+        {
+            //プレイヤーの速度を０にする
+            rb.velocity = Vector2.zero;
+
+            currentClearTimer -= Time.deltaTime;
+            if (currentClearTimer <= 0)
+            {
+                PlayerReset();
+                isClear = false;
+            }
+        }
         else
         {
             PlayerUpdate();
             UpdateAnimation();
-            UpdateUI();
+            UpdateUI();    
         }
     }
 
@@ -131,11 +154,7 @@ public class PlayerController : MonoBehaviour
             DashTime = dashTime;
             DashCoolTime = dashCoolTime;
 
-            if (!hasShaken)
-            {
-                shaker.ShakeCamera();
-                hasShaken = true; // 振動させたのでフラグを立てる
-            }
+
 
             animator.PlayInFixedTime("Dash", 0);
 
@@ -186,8 +205,6 @@ public class PlayerController : MonoBehaviour
             isJump = true;
             animator.PlayInFixedTime("Jump", 0);
         }
-
-
 
         DashCoolTime -= Time.deltaTime;
 
@@ -354,6 +371,17 @@ public class PlayerController : MonoBehaviour
         else
             uiButton[(int)Button.Space].ButtonRelease();
     }
+
+    public void Clear(bool clear)
+    {
+        isClear = clear;
+        if(isClear)
+        {
+            currentClearTimer = clearTimer;
+        }
+    }
+
+
 
     public void Death(bool death)
     {
