@@ -27,9 +27,12 @@ public class PlayerController : MonoBehaviour
     public bool isDeath;
     float currentDeathTimer;
 
-    bool isDashing = false;
+    public bool isDashing = false;
     bool isMovingHorizontally = false;
 
+    bool hasShaken = false; // カメラを振動させたかどうかのフラグ
+
+    public Shaker shaker;
 
 
     //ジャンプ関連
@@ -43,6 +46,7 @@ public class PlayerController : MonoBehaviour
     bool direction;
 
     public Afterimage afterimage;
+
 
     public enum Button
     {
@@ -72,15 +76,26 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         afterimage.UpdateTransform(transform.position, transform.localScale);
-        
-        ShakerUpdate();
+
+
         if (isDeath)
         {
+            // カメラがまだ振動していないなら、一回だけ振動させる
+            if (!hasShaken)
+            {
+                shaker.ShakeCamera();
+                hasShaken = true; // 振動させたのでフラグを立てる
+            }
+
+            //プレイヤーの速度を０にする
+            rb.velocity = Vector2.zero;
+
             currentDeathTimer -= Time.deltaTime;
             if (currentDeathTimer <= 0)
             {
                 PlayerReset();
                 isDeath = false;
+                hasShaken = false; // リセット時に振動フラグもリセットする
             }
         }
         else
@@ -97,21 +112,30 @@ public class PlayerController : MonoBehaviour
         float x = Input.GetAxis("Horizontal");
 
         // LSHIFT を押しているときだけ上方向の入力を許可
-        float y = (Input.GetKey(KeyCode.LeftShift)) ? Input.GetAxis("Vertical") : 0;
+        float y =  0;
 
 
+        //ダッシュ中をfalseに
         DashTime -= Time.deltaTime;
         if (DashTime <= 0)
         {
             isDashing = false;
+            hasShaken = false; // リセット時に振動フラグもリセットする
         }
 
+
         // ダッシュ可能でかつ LSHIFT が押された時のみダッシュ処理を行う
-        if (DashCoolTime <= 0 && !isDashing && Input.GetKey(KeyCode.LeftShift))
+        if (DashCoolTime <= 0 && !isDashing && Input.GetKey(KeyCode.LeftShift)&& (Input.GetKey(KeyCode.A)|| Input.GetKey(KeyCode.D)))
         {
             isDashing = true;
             DashTime = dashTime;
             DashCoolTime = dashCoolTime;
+
+            if (!hasShaken)
+            {
+                shaker.ShakeCamera();
+                hasShaken = true; // 振動させたのでフラグを立てる
+            }
 
             animator.PlayInFixedTime("Dash", 0);
 
@@ -121,12 +145,13 @@ public class PlayerController : MonoBehaviour
             // 横または縦方向の入力に応じてダッシュ方向を決定
             Vector3 dashDirection = new Vector3(x, y, 0).normalized;
 
-            // 目標位置を計算してダッシュのために移動を開始
-            targetPosition = transform.position + dashDirection * dashSpeed * dashTime;
+            // ダッシュ前に現在の速度をリセット
+            rb.velocity = new Vector2(0, rb.velocity.y);  // 横方向の速度をリセットしても垂直方向は維持
 
             // Rigidbody2D の AddForce を使ってダッシュする
             rb.AddForce(dashDirection * dashSpeed, ForceMode2D.Impulse);
-         
+      
+        
         }
         // ダッシュしていない場合は通常の移動処理
         if (!isDashing)
@@ -153,6 +178,7 @@ public class PlayerController : MonoBehaviour
         // スペースキーでジャンプ処理
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
+            rb.velocity = new Vector2(rb.velocity.x, 0);  // ジャンプ前に垂直方向の速度をリセット
             rb.AddForce(new Vector2(0, jumpPower), ForceMode2D.Impulse);
             isGrounded = false;
 
@@ -188,14 +214,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void ShakerUpdate()
-    {
-        var impulseSource = GetComponent<Cinemachine.CinemachineImpulseSource>();
-        if (impulseSource != null&&isDeath)
-        {
-            impulseSource.GenerateImpulse();
-        }
-    }
+
 
     void UpdateAnimation()
     {
@@ -339,7 +358,7 @@ public class PlayerController : MonoBehaviour
     public void Death(bool death)
     {
         isDeath = death;
-
+       
         if (isDeath)
         {
             //デス時のタイマーリセット
