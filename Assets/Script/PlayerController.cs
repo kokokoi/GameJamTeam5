@@ -57,6 +57,7 @@ public class PlayerController : MonoBehaviour
 
     public Afterimage afterimage;
 
+    private ParticleSystem particleSystem_;
 
     public enum Button
     {
@@ -82,6 +83,11 @@ public class PlayerController : MonoBehaviour
         isClear = false;
         currentDeathTimer = deathTimer;
         currentClearTimer = clearTimer;
+
+        // Find Death ParticleSystem
+        GameObject particleObject = GameObject.Find("DeathParticle");
+        particleSystem_ = particleObject.GetComponent<ParticleSystem>();
+        particleSystem_.Stop();
     }
 
     // Update is called once per frame
@@ -100,12 +106,26 @@ public class PlayerController : MonoBehaviour
 
         if (isDeath)
         {
+            // Check Animation End
+            AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+            if (stateInfo.IsName("Death"))
+            {
+                if (stateInfo.normalizedTime >= 0.8f)
+                {
+                    // Stop Animation
+                    animator.speed = 0;
+                }
+            }
 
             // カメラがまだ振動していないなら、一回だけ振動させる
             if (!hasShaken)
             {
                 animator.PlayInFixedTime("Death", 0);
-               
+
+                // Play ParticleSystem
+                particleSystem_.transform.position = transform.position;
+                particleSystem_.Play();
+
                 shaker.ShakeCamera();
               //  fadeScript.StartFade();
                 hasShaken = true; // 振動させたのでフラグを立てる
@@ -412,6 +432,12 @@ public class PlayerController : MonoBehaviour
     private void PlayerReset()
     {
         this.transform.position = Vector3.zero;
+
+        // アニメーションを設定
+        animator.PlayInFixedTime("Idle", 0);
+
+        // アニメーション再生速度設定
+        animator.speed = 1.0f;
     }
 
 }

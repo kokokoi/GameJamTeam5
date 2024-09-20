@@ -910,20 +910,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7151f7ce019c73b4f9767aeeea330786, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &668643301
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 668643295}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6a912acc9192f4d48b625dc4c3e41892, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  soundManager: {fileID: 668643297}
-  clip: {fileID: 8300000, guid: c7224fdb204dc264d87b6e1b3dddfb97, type: 3}
 --- !u!1 &675036862
 GameObject:
   m_ObjectHideFlags: 0
@@ -1317,10 +1303,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11d69ddfa8611ba4b9d214b4db094bb8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  soundManager: {fileID: 668643297}
+  clip: {fileID: 8300000, guid: c7224fdb204dc264d87b6e1b3dddfb97, type: 3}
   image: {fileID: 698795757}
   shadow: {fileID: 1504946466}
-  videoPlayer: {fileID: 1645445929}
-  video: {fileID: 2096474609}
 --- !u!114 &863177156
 MonoBehaviour:
   m_ObjectHideFlags: 0
