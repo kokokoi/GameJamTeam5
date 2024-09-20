@@ -56,10 +56,12 @@ public class UIButton : MonoBehaviour
         if (Time.time >= showButtonTimer && ImageAlpha < 1.0f)
         {
                 ShowButton();
+
+            shadow.color = new Color(1.0f, 1.0f, 214.0f / 255.0f, ShadowAlpha);
+            image.color = new Color(1.0f, 1.0f, 214.0f / 255.0f, ImageAlpha);
+
         }
 
-        shadow.color = new Color(1.0f, 1.0f, 214.0f / 255.0f, ShadowAlpha);
-        image.color = new Color(1.0f, 1.0f, 214.0f / 255.0f, ImageAlpha);
 
     }
 }

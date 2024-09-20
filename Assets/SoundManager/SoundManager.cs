@@ -38,15 +38,15 @@ public class SoundManager : MonoBehaviour
 
     void Start()
     {
-        GameObject soundManager = CheckOtherSoundManager();
-        bool checkResult = soundManager != null && soundManager != gameObject;
+        //GameObject soundManager = CheckOtherSoundManager();
+        //bool checkResult = soundManager != null && soundManager != gameObject;
 
-        if (checkResult)
-        {
-            Destroy(gameObject);
-        }
+        //if (checkResult)
+        //{
+        //    Destroy(gameObject);
+        //}
 
-        DontDestroyOnLoad(gameObject);
+        //DontDestroyOnLoad(gameObject);
     }
 
     GameObject CheckOtherSoundManager()
