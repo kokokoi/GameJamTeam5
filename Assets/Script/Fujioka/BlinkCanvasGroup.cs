@@ -10,9 +10,18 @@ public class BlinkCanvasGroup : MonoBehaviour
 
     private CanvasGroup canvasGroup;
 
+    private bool loop = false;
+
     void Start()
     {
         this.canvasGroup = this.GetComponent<CanvasGroup>();
-        this.canvasGroup.DOFade(0.0f, this.DurationSeconds).SetEase(this.EaseType).SetLoops(-1, LoopType.Yoyo);
+    }
+
+    private void Update()
+    {
+        if(loop)
+        {
+            this.canvasGroup.DOFade(0.0f, this.DurationSeconds).SetEase(this.EaseType).SetLoops(-1, LoopType.Yoyo);
+        }
     }
 }

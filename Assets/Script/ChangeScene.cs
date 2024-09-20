@@ -18,7 +18,7 @@ public class ChangeScene : MonoBehaviour
         ButtonDown();
  
 
-        //SceneManager.LoadScene("GameScene");
+        SceneManager.LoadScene("GameScene");
    }
 
     public void ButtonDown()

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-
+using DG.Tweening;
 
 public class RankResult : MonoBehaviour
 {
@@ -30,6 +30,8 @@ public class RankResult : MonoBehaviour
             rankText.SetText("RANK:B");
             rankText.color = new Color(0.0f, 0.0f, 1.0f, 1.0f);
         }
+
+        rankText.transform.DOMove(new Vector3(1060, 540, 0.0f), 1.4f).SetEase(Ease.OutQuart);
     }
 
     
