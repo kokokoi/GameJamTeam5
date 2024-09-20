@@ -61,6 +61,7 @@ public class PlayerController : MonoBehaviour
     private ParticleSystem particleSystem_;
     private ParticleSystem goalParticle;
     private ParticleSystem goalParticle0;
+    private ParticleSystem goalParticle1;
 
     public enum Button
     {
@@ -99,6 +100,10 @@ public class PlayerController : MonoBehaviour
         goalParticleObject = GameObject.Find("GoalParticle0");
         goalParticle0 = goalParticleObject.GetComponent<ParticleSystem>();
         goalParticle0.Stop();
+
+        goalParticleObject = GameObject.Find("GoalParticle1");
+        goalParticle1 = goalParticleObject.GetComponent<ParticleSystem>();
+        goalParticle1.Stop();
     }
 
     // Update is called once per frame
@@ -428,16 +433,21 @@ public class PlayerController : MonoBehaviour
 
             // GoalParticleÇê∂ê¨
             Vector3 goalParticlePosition = transform.position;
-            goalParticlePosition.x = -2;
-            goalParticlePosition.y = 2;
+            goalParticlePosition.x += -2;
+            goalParticlePosition.y += 2;
             Vector3 goalParticlePosition0 = transform.position;
-            goalParticlePosition0.x = 2;
-            goalParticlePosition0.y = 4;
+            goalParticlePosition0.x += 2;
+            goalParticlePosition0.y += 4;
+            Vector3 goalParticlePosition1 = transform.position;
+            goalParticlePosition1.x += -2.5f;
+            goalParticlePosition1.y += 7;
 
             goalParticle.transform.position = goalParticlePosition;
             goalParticle0.transform.position = goalParticlePosition0;
+            goalParticle1.transform.position = goalParticlePosition1;
             goalParticle.Play();
             goalParticle0.Play();
+            goalParticle1.Play();
         }
     }
 
