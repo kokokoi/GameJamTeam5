@@ -296,7 +296,7 @@ MonoBehaviour:
     m_ImpulseDuration: 0.2
     m_ImpulseType: 3
     m_DissipationRate: 0.25
-    m_RawSignal: {fileID: 11400000, guid: 6bfc9589bff1c624e8902db2be502e7d, type: 2}
+    m_RawSignal: {fileID: 11400000, guid: 90a11b0bd26895e4ab6d8538b8d1e699, type: 2}
     m_AmplitudeGain: 3
     m_FrequencyGain: 3
     m_RepeatMode: 0
@@ -316,7 +316,7 @@ MonoBehaviour:
         m_RotationOrder: 4
       m_AttackTime: 0
       m_SustainTime: 0.1
-      m_DecayTime: 0.7
+      m_DecayTime: 0.1
       m_ScaleWithImpact: 1
       m_HoldForever: 0
     m_ImpactRadius: 100
@@ -6790,6 +6790,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1513295686315543233, guid: 7eb5ab5818411504e9785ec6d3b12099, type: 3}
+      propertyPath: m_Mass
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1513295686315543233, guid: 7eb5ab5818411504e9785ec6d3b12099, type: 3}
       propertyPath: m_CollisionDetection
       value: 1
       objectReference: {fileID: 0}
@@ -6798,8 +6802,12 @@ PrefabInstance:
       value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 1513295686315543235, guid: 7eb5ab5818411504e9785ec6d3b12099, type: 3}
+      propertyPath: dashSpeed
+      value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: 1513295686315543235, guid: 7eb5ab5818411504e9785ec6d3b12099, type: 3}
       propertyPath: jumpPower
-      value: 30
+      value: 40
       objectReference: {fileID: 0}
     - target: {fileID: 1513295686315543235, guid: 7eb5ab5818411504e9785ec6d3b12099, type: 3}
       propertyPath: deathTimer
@@ -6811,7 +6819,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1513295686315543235, guid: 7eb5ab5818411504e9785ec6d3b12099, type: 3}
       propertyPath: dashCoolTime
-      value: 5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1513295686315543235, guid: 7eb5ab5818411504e9785ec6d3b12099, type: 3}
       propertyPath: deceleration
