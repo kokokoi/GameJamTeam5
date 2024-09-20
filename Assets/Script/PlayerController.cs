@@ -32,6 +32,8 @@ public class PlayerController : MonoBehaviour
 
     bool hasShaken = false; // カメラを振動させたかどうかのフラグ
 
+    public Shaker shaker;
+
 
     //ジャンプ関連
     [SerializeField] bool isGrounded;//地面にいるかどうか
@@ -43,7 +45,7 @@ public class PlayerController : MonoBehaviour
     bool isJump;
     bool direction;
 
-    public Shaker shaker;
+    public Afterimage afterimage;
 
 
     public enum Button
@@ -73,6 +75,9 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        afterimage.UpdateTransform(transform.position, transform.localScale);
+
+
         if (isDeath)
         {
             // カメラがまだ振動していないなら、一回だけ振動させる
@@ -133,6 +138,9 @@ public class PlayerController : MonoBehaviour
             }
 
             animator.PlayInFixedTime("Dash", 0);
+
+            // 残像を使用
+            afterimage.UseAfterImage();
 
             // 横または縦方向の入力に応じてダッシュ方向を決定
             Vector3 dashDirection = new Vector3(x, y, 0).normalized;
