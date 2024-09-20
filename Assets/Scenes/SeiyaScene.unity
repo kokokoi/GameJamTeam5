@@ -265,6 +265,7 @@ GameObject:
   m_Component:
   - component: {fileID: 233248997}
   - component: {fileID: 233248996}
+  - component: {fileID: 233248998}
   m_Layer: 0
   m_Name: Shaker
   m_TagString: Untagged
@@ -315,16 +316,16 @@ MonoBehaviour:
         m_PostInfinity: 2
         m_RotationOrder: 4
       m_AttackTime: 0
-      m_SustainTime: 0.1
+      m_SustainTime: 0.55
       m_DecayTime: 0.1
       m_ScaleWithImpact: 1
       m_HoldForever: 0
-    m_ImpactRadius: 100
+    m_ImpactRadius: 57.3
     m_DirectionMode: 0
     m_DissipationMode: 2
     m_DissipationDistance: 100
-    m_PropagationSpeed: 343
-  m_DefaultVelocity: {x: 2, y: 1, z: 0}
+    m_PropagationSpeed: 1258.97
+  m_DefaultVelocity: {x: 1, y: 1, z: 1}
 --- !u!4 &233248997
 Transform:
   m_ObjectHideFlags: 0
@@ -340,6 +341,18 @@ Transform:
   m_Father: {fileID: 1878452828}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &233248998
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 233248995}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7715babb8236c4a4fb5f34c2490b4c01, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &347429679
 GameObject:
   m_ObjectHideFlags: 0
@@ -1844,7 +1857,7 @@ TilemapRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 6e1961dab6b328f4aaae06b8b9c96f60, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -6798,6 +6811,10 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1513295686315543235, guid: 7eb5ab5818411504e9785ec6d3b12099, type: 3}
+      propertyPath: shaker
+      value: 
+      objectReference: {fileID: 233248998}
+    - target: {fileID: 1513295686315543235, guid: 7eb5ab5818411504e9785ec6d3b12099, type: 3}
       propertyPath: maxSpeed
       value: 30
       objectReference: {fileID: 0}
@@ -6811,7 +6828,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1513295686315543235, guid: 7eb5ab5818411504e9785ec6d3b12099, type: 3}
       propertyPath: deathTimer
-      value: 10
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 1513295686315543235, guid: 7eb5ab5818411504e9785ec6d3b12099, type: 3}
       propertyPath: acceleration
