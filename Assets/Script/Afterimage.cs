@@ -12,11 +12,13 @@ public class Afterimage : MonoBehaviour
     SpriteRenderer spriteRenderer_;
 
     int createNum_ = 0;
-    float createTimer_ = 0.5f;
-    bool useAfterImage_ = true;
-    //bool useAfterImage_ = false;
+    float createTimer_ = 0.0f;
+    bool useAfterImage_ = false;
+    [SerializeField] float createTime_;
+    [SerializeField] float fadeSpeed_;
 
     Vector3 createPosition_ = Vector3.zero;
+    Vector3 createScale_ = Vector3.zero;
 
     // Start is called before the first frame update
     void Start()
@@ -45,6 +47,7 @@ public class Afterimage : MonoBehaviour
                     SetColorAlpha(spriteInstance0_, 1.0f);
 
                     spriteInstance0_.transform.position = createPosition_;
+                    spriteInstance0_.transform.localScale = createScale_;
 
                     ++createNum_;
                 }
@@ -53,6 +56,7 @@ public class Afterimage : MonoBehaviour
                     SetColorAlpha(spriteInstance1_, 1.0f);
 
                     spriteInstance1_.transform.position = createPosition_;
+                    spriteInstance1_.transform.localScale = createScale_;
 
                     ++createNum_;
                 }
@@ -61,11 +65,12 @@ public class Afterimage : MonoBehaviour
                     SetColorAlpha(spriteInstance2_, 1.0f);
 
                     spriteInstance2_.transform.position = createPosition_;
+                    spriteInstance2_.transform.localScale = createScale_;
 
                     useAfterImage_ = false;
                 }
 
-                createTimer_ = 0.25f;
+                createTimer_ = createTime_;
             }
 
             createTimer_ -= Time.deltaTime;
@@ -88,7 +93,7 @@ public class Afterimage : MonoBehaviour
     {
         spriteRenderer_ = obj.GetComponent<SpriteRenderer>();
         Color color = spriteRenderer_.color;
-        color.a = Mathf.Lerp(color.a, 0f, Time.deltaTime);
+        color.a = Mathf.Lerp(color.a, 0f, Time.deltaTime * fadeSpeed_);
         spriteRenderer_.color = color;
     }
 
@@ -96,10 +101,12 @@ public class Afterimage : MonoBehaviour
     {
         useAfterImage_ = true;
         createNum_ = 0;
+        createTimer_ = 0.0f;
     }
 
-    public void UpdatePosition(Vector3 position)
+    public void UpdateTransform(Vector3 position, Vector3 scale)
     {
         createPosition_ = position;
+        createScale_ = scale;
     }
 }

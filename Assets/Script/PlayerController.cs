@@ -42,6 +42,7 @@ public class PlayerController : MonoBehaviour
     bool isJump;
     bool direction;
 
+    public Afterimage afterimage;
 
     public enum Button
     {
@@ -70,6 +71,8 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        afterimage.UpdateTransform(transform.position, transform.localScale);
+        
         ShakerUpdate();
         if (isDeath)
         {
@@ -111,6 +114,9 @@ public class PlayerController : MonoBehaviour
             DashCoolTime = dashCoolTime;
 
             animator.PlayInFixedTime("Dash", 0);
+
+            // 残像を使用
+            afterimage.UseAfterImage();
 
             // 横または縦方向の入力に応じてダッシュ方向を決定
             Vector3 dashDirection = new Vector3(x, y, 0).normalized;
