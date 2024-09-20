@@ -63,6 +63,8 @@ public class PlayerController : MonoBehaviour
     private ParticleSystem goalParticle0;
     private ParticleSystem goalParticle1;
 
+    private ParticleSystem jumpParticle;
+
     public enum Button
     {
         Right = 0, Left, Up, Down, Shift, Space, Max
@@ -104,6 +106,10 @@ public class PlayerController : MonoBehaviour
         goalParticleObject = GameObject.Find("GoalParticle1");
         goalParticle1 = goalParticleObject.GetComponent<ParticleSystem>();
         goalParticle1.Stop();
+
+        GameObject jumpParticleObject = GameObject.Find("JumpParticle");
+        jumpParticle = jumpParticleObject.GetComponent<ParticleSystem>();
+        jumpParticle.Stop();
     }
 
     // Update is called once per frame
@@ -256,6 +262,10 @@ public class PlayerController : MonoBehaviour
 
             soundManager.PlaySe(clip_jump);
 
+            Vector3 jumpParticlePosition = transform.position;
+            jumpParticlePosition.y -= 1;
+            jumpParticle.transform.position = jumpParticlePosition;
+            jumpParticle.Play();
         }
 
         DashCoolTime -= Time.deltaTime;
