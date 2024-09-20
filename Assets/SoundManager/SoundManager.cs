@@ -34,6 +34,8 @@ public class SoundManager : MonoBehaviour
         }
     }
 
+    
+
     void Start()
     {
         GameObject soundManager = CheckOtherSoundManager();
@@ -72,6 +74,11 @@ public class SoundManager : MonoBehaviour
         }
 
         seAudioSource.PlayOneShot(clip);
+    }
+
+    public void StopBgm()
+    {
+        bgmAudioSource.Stop(); 
     }
 
 }
