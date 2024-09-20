@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Video;
 using static UnityEngine.RuleTile.TilingRuleOutput;
 
 public class PlayerController : MonoBehaviour
@@ -67,6 +68,9 @@ public class PlayerController : MonoBehaviour
     private ParticleSystem goalParticle0;
     private ParticleSystem goalParticle1;
 
+    [SerializeField] VideoPlayer videoPlayer;
+    [SerializeField] GameObject video;
+
     public enum Button
     {
         Right = 0, Left, Up, Down, Shift, Space, Max
@@ -108,6 +112,8 @@ public class PlayerController : MonoBehaviour
         goalParticleObject = GameObject.Find("GoalParticle1");
         goalParticle1 = goalParticleObject.GetComponent<ParticleSystem>();
         goalParticle1.Stop();
+
+        videoPlayer.Pause();
     }
 
     // Update is called once per frame
@@ -171,7 +177,12 @@ public class PlayerController : MonoBehaviour
             currentClearTimer -= Time.deltaTime;
             if (currentClearTimer <= 0)
             {
-                SceneManager.LoadScene("ResultScene");
+                video.SetActive(true);
+                videoPlayer.Play();
+                DOVirtual.DelayedCall(2.4f, () => {
+                    LoadScene();
+                });
+
                 isClear = false;
             }
         }
@@ -181,6 +192,11 @@ public class PlayerController : MonoBehaviour
             UpdateAnimation();
             UpdateUI();
         }
+    }
+
+    private void LoadScene()
+    {
+        SceneManager.LoadScene("ResultScene");
     }
 
     private void PlayerUpdate()
