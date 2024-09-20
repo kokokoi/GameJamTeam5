@@ -8,7 +8,6 @@ public class TrapScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
     }
 
     // Update is called once per frame
@@ -22,7 +21,7 @@ public class TrapScript : MonoBehaviour
         PlayerController controller = collision.GetComponent<PlayerController>();
         if (controller != null)
         {
-            controller.Death();
+            controller.Death(true);
         }
     }
 

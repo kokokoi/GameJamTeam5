@@ -16,14 +16,21 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float deceleration;//減速度
     [SerializeField] float maxSpeed;//最高速度
     [SerializeField] float airControlFactor = 0.0f;//空中での操作制限
+    [SerializeField] float deathTimer;
 
     //現在のスピードを保持しておく本数
     float currentSpeed;
     float DashCoolTime;
     float DashTime;
 
+    //死んでからフラグとタイマー
+    public bool isDeath;
+    float currentDeathTimer;
+
     bool isDashing = false;
     bool isMovingHorizontally = false;
+
+
 
     //ジャンプ関連
     [SerializeField] bool isGrounded;//地面にいるかどうか
@@ -56,23 +63,47 @@ public class PlayerController : MonoBehaviour
         DashCoolTime = 0f;
         DashTime = 0f;
         animator = GetComponent<Animator>();
+        isDeath = false;
+        currentDeathTimer = deathTimer;
     }
 
     // Update is called once per frame
     void Update()
     {
-        float x = Input.GetAxis("Horizontal");
-        float y = 0;
-
-        //上方向のダッシュ入力を取得
-        if(Input.GetKey(KeyCode.W))
+        ShakerUpdate();
+        if (isDeath)
         {
-            if (Input.GetKey(KeyCode.LeftShift))
+            currentDeathTimer -= Time.deltaTime;
+            if (currentDeathTimer <= 0)
             {
-                y = 1;
+                PlayerReset();
+                isDeath = false;
             }
         }
+        else
+        {
+            PlayerUpdate();
+            UpdateAnimation();
+            UpdateUI();
+        }
+    }
 
+
+    void PlayerUpdate()
+    {
+        float x = Input.GetAxis("Horizontal");
+
+        // LSHIFT を押しているときだけ上方向の入力を許可
+        float y = (Input.GetKey(KeyCode.LeftShift)) ? Input.GetAxis("Vertical") : 0;
+
+
+        DashTime -= Time.deltaTime;
+        if (DashTime <= 0)
+        {
+            isDashing = false;
+        }
+
+        // ダッシュ可能でかつ LSHIFT が押された時のみダッシュ処理を行う
         if (DashCoolTime <= 0 && !isDashing && Input.GetKey(KeyCode.LeftShift))
         {
             isDashing = true;
@@ -81,28 +112,27 @@ public class PlayerController : MonoBehaviour
 
             animator.PlayInFixedTime("Dash", 0);
 
+            // 横または縦方向の入力に応じてダッシュ方向を決定
+            Vector3 dashDirection = new Vector3(x, y, 0).normalized;
+
             // 目標位置を計算してダッシュのために移動を開始
-            targetPosition = transform.position + new Vector3(x, y, 0) * dashSpeed * dashTime;
+            targetPosition = transform.position + dashDirection * dashSpeed * dashTime;
 
-            // イージングを使って移動
-            transform.DOMove(targetPosition, dashTime)
-                .SetEase(Ease.OutQuad) // Ease設定（自由に変更可能）
-                .OnComplete(() =>
-                {
-                    isDashing = false; // ダッシュ終了
-                    currentSpeed = speed; // 通常スピードに戻す
-                });
+            // Rigidbody2D の AddForce を使ってダッシュする
+            rb.AddForce(dashDirection * dashSpeed, ForceMode2D.Impulse);
+         
         }
-
         // ダッシュしていない場合は通常の移動処理
         if (!isDashing)
         {
-            float controlFactor = isGrounded ? 1.0f : airControlFactor;
 
-            if (x != 0)
+            float controlFactor = isGrounded ? 10.0f : airControlFactor;
+
+            if (x != 0 || y != 0) 
             {
                 currentSpeed += acceleration * Time.deltaTime * controlFactor;
                 currentSpeed = Mathf.Clamp(currentSpeed, 0, maxSpeed);
+                deceleration = 10.0f;
             }
             else
             {
@@ -125,12 +155,12 @@ public class PlayerController : MonoBehaviour
             animator.PlayInFixedTime("Jump", 0);
         }
 
+
+
         DashCoolTime -= Time.deltaTime;
 
-        UpdateAnimation();
-
-        UpdateUI();
     }
+
 
     //地面との接触を判定する関数（OnCollisionEnter2DとOnCollisionExit2Dを使用）
     private void OnCollisionEnter2D(Collision2D collision)
@@ -149,6 +179,15 @@ public class PlayerController : MonoBehaviour
         if (collision.gameObject.CompareTag("Ground") || collision.gameObject.CompareTag("Slope"))
         {
             isGrounded = false;  // 地面から離れたらジャンプ不可にする
+        }
+    }
+
+    void ShakerUpdate()
+    {
+        var impulseSource = GetComponent<Cinemachine.CinemachineImpulseSource>();
+        if (impulseSource != null&&isDeath)
+        {
+            impulseSource.GenerateImpulse();
         }
     }
 
@@ -291,9 +330,15 @@ public class PlayerController : MonoBehaviour
             uiButton[(int)Button.Space].ButtonRelease();
     }
 
-    public void Death()
+    public void Death(bool death)
     {
-        PlayerReset();
+        isDeath = death;
+
+        if (isDeath)
+        {
+            //デス時のタイマーリセット
+            currentDeathTimer = deathTimer;
+        }
     }
     private void PlayerReset()
     {

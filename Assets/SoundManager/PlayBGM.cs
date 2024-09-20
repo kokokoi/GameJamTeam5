@@ -11,6 +11,7 @@ public class PlayBGM : MonoBehaviour
 
     void Start()
     {
+        soundManager.BgmVolume = 0.6f;
         soundManager.PlayBgm(clip);
     }
 }
