@@ -13,7 +13,6 @@ public class UIButton : MonoBehaviour
 
     public float ImageAlpha = 0.0f;
     public float ShadowAlpha = 0.0f;
-    public float timer = 0.0f;
 
     public void ButtonDown()
     {
@@ -41,36 +40,26 @@ public class UIButton : MonoBehaviour
             ImageAlpha = 1.0f;
         if (ShadowAlpha >= 0.5f)
             ShadowAlpha = 0.5f;
-
-        shadow.color = new Color(1.0f, 1.0f, 214.0f / 255.0f, ImageAlpha);
-        image.color = new Color(1.0f, 1.0f, 214.0f / 255.0f, ShadowAlpha);
-
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        shadow.color = new Color(1.0f, 1.0f, 214.0f / 255.0f, ImageAlpha);
-        image.color = new Color(1.0f, 1.0f, 214.0f / 255.0f, ShadowAlpha);
+        shadow.color = new Color(1.0f, 1.0f, 214.0f / 255.0f, ShadowAlpha);
+        image.color = new Color(1.0f, 1.0f, 214.0f / 255.0f, ImageAlpha);
 
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Time.time >= showButtonTimer)
+        if (Time.time >= showButtonTimer && ImageAlpha < 1.0f)
         {
-            if (ImageAlpha < 1.0f)
-            {
                 ShowButton();
+        }
 
-            }
-        }
-        else
-        {
-            shadow.color = new Color(1.0f, 1.0f, 214.0f / 255.0f, ImageAlpha);
-            image.color = new Color(1.0f, 1.0f, 214.0f / 255.0f, ShadowAlpha);
-        }
+        shadow.color = new Color(1.0f, 1.0f, 214.0f / 255.0f, ShadowAlpha);
+        image.color = new Color(1.0f, 1.0f, 214.0f / 255.0f, ImageAlpha);
 
     }
 }
