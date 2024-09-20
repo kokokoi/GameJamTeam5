@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -18,6 +19,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float airControlFactor = 0.0f;//空中での操作制限
     [SerializeField] float deathTimer;
     [SerializeField] float clearTimer;
+    [SerializeField] SoundManager soundManager;
+    [SerializeField] AudioClip clip_jump;
+    [SerializeField] AudioClip clip_dash;
+    [SerializeField] AudioClip clip_move;
 
     //現在のスピードを保持しておく本数
     float currentSpeed;
@@ -90,6 +95,14 @@ public class PlayerController : MonoBehaviour
     {
         afterimage.UpdateTransform(transform.position, transform.localScale);
 
+        if (Input.GetKeyDown(KeyCode.A)|| Input.GetKeyDown(KeyCode.D))
+        {
+            soundManager.PlaySe(clip_move);
+        } 
+        if (Input.GetKeyDown(KeyCode.LeftShift))
+        {
+            soundManager.PlaySe(clip_dash);
+        }
 
         if (isDeath)
         {
@@ -137,7 +150,7 @@ public class PlayerController : MonoBehaviour
             currentClearTimer -= Time.deltaTime;
             if (currentClearTimer <= 0)
             {
-                PlayerReset();
+                SceneManager.LoadScene("ResultScene");
                 isClear = false;
             }
         }
@@ -173,8 +186,6 @@ public class PlayerController : MonoBehaviour
             isDashing = true;
             DashTime = dashTime;
             DashCoolTime = dashCoolTime;
-
-
 
             animator.PlayInFixedTime("Dash", 0);
 
@@ -224,6 +235,9 @@ public class PlayerController : MonoBehaviour
             // ジャンプフラグを立てる
             isJump = true;
             animator.PlayInFixedTime("Jump", 0);
+
+            soundManager.PlaySe(clip_jump);
+
         }
 
         DashCoolTime -= Time.deltaTime;

@@ -7,6 +7,10 @@ using TMPro;
 
 public class ChangeScene : MonoBehaviour
 {
+    [SerializeField]
+    SoundManager soundManager;
+    [SerializeField]
+    AudioClip clip;
     public Image image;
     public Image shadow;
     //public Sprite titleSprite;
@@ -16,7 +20,8 @@ public class ChangeScene : MonoBehaviour
    {
 
         ButtonDown();
- 
+
+        soundManager.PlaySe(clip);
 
         SceneManager.LoadScene("GameScene");
    }
