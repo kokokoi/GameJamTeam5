@@ -58,6 +58,7 @@ public class PlayerController : MonoBehaviour
     public Afterimage afterimage;
 
     private ParticleSystem particleSystem_;
+    private ParticleSystem goalParticle;
 
     public enum Button
     {
@@ -88,6 +89,10 @@ public class PlayerController : MonoBehaviour
         GameObject particleObject = GameObject.Find("DeathParticle");
         particleSystem_ = particleObject.GetComponent<ParticleSystem>();
         particleSystem_.Stop();
+
+        GameObject goalParticleObject = GameObject.Find("GoalParticle");
+        goalParticle = goalParticleObject.GetComponent<ParticleSystem>();
+        goalParticle.Stop();
     }
 
     // Update is called once per frame
@@ -414,6 +419,10 @@ public class PlayerController : MonoBehaviour
         if(isClear)
         {
             currentClearTimer = clearTimer;
+
+            // GoalParticleÇê∂ê¨
+            goalParticle.transform.position = transform.position;
+            goalParticle.Play();
         }
     }
 
