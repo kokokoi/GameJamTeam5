@@ -126,6 +126,8 @@ public class PlayerController : MonoBehaviour
         {
             //プレイヤーの速度を０にする
             rb.velocity = Vector2.zero;
+            animator.PlayInFixedTime("Attack", 0);
+
 
             currentClearTimer -= Time.deltaTime;
             if (currentClearTimer <= 0)
