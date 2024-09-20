@@ -10,51 +10,55 @@ using static UnityEngine.RuleTile.TilingRuleOutput;
 public class PlayerController : MonoBehaviour
 {
     //通常スピード、ダッシュスピードの変数宣言
-    [SerializeField] float speed, dashSpeed;
-    [SerializeField] float dashCoolTime;
-    [SerializeField] float jumpPower;
-    [SerializeField] float dashTime;
-    [SerializeField] float acceleration;//加速度
-    [SerializeField] float deceleration;//減速度
-    [SerializeField] float maxSpeed;//最高速度
-    [SerializeField] float airControlFactor = 0.0f;//空中での操作制限
-    [SerializeField] float deathTimer;
-    [SerializeField] float clearTimer;
-    [SerializeField] SoundManager soundManager;
-    [SerializeField] AudioClip clip_jump;
-    [SerializeField] AudioClip clip_dash;
-    [SerializeField] AudioClip clip_move;
+    [SerializeField] private float speed, dashSpeed;
+
+    [SerializeField] private float dashCoolTime;
+    [SerializeField] private float jumpPower;
+    [SerializeField] private float dashTime;
+    [SerializeField] private float acceleration;//加速度
+    [SerializeField] private float deceleration;//減速度
+    [SerializeField] private float maxSpeed;//最高速度
+    [SerializeField] private float airControlFactor = 0.0f;//空中での操作制限
+    [SerializeField] private float deathTimer;
+    [SerializeField] private float clearTimer;
+    [SerializeField] private SoundManager soundManager;
+    [SerializeField] private AudioClip clip_jump;
+    [SerializeField] private AudioClip clip_dash;
+    [SerializeField] private AudioClip clip_move;
 
     //現在のスピードを保持しておく本数
-    float currentSpeed;
-    float DashCoolTime;
-    float DashTime;
+    private float currentSpeed;
+
+    private float DashCoolTime;
+    private float DashTime;
 
     //死んでからフラグとタイマー
     public bool isDeath;
-    float currentDeathTimer;
+
+    private float currentDeathTimer;
 
     public bool isClear;
-    float currentClearTimer;
+    private float currentClearTimer;
 
     public bool isDashing = false;
-    bool isMovingHorizontally = false;
+    private bool isMovingHorizontally = false;
 
-    bool hasShaken = false; // カメラを振動させたかどうかのフラグ
+    private bool hasShaken = false; // カメラを振動させたかどうかのフラグ
 
     public Shaker shaker;
 
-   // public PlayerDeathFadeScript fadeScript;
+    // public PlayerDeathFadeScript fadeScript;
 
     //ジャンプ関連
-    [SerializeField] bool isGrounded;//地面にいるかどうか
-    Rigidbody2D rb;
+    [SerializeField] private bool isGrounded;//地面にいるかどうか
 
-    Vector3 targetPosition;
+    private Rigidbody2D rb;
 
-    Animator animator;
-    bool isJump;
-    bool direction;
+    private Vector3 targetPosition;
+
+    private Animator animator;
+    private bool isJump;
+    private bool direction;
 
     public Afterimage afterimage;
 
@@ -62,8 +66,6 @@ public class PlayerController : MonoBehaviour
     private ParticleSystem goalParticle;
     private ParticleSystem goalParticle0;
     private ParticleSystem goalParticle1;
-
-    private ParticleSystem jumpParticle;
 
     public enum Button
     {
@@ -73,7 +75,7 @@ public class PlayerController : MonoBehaviour
     public UIButton[] uiButton = new UIButton[(int)Button.Max];
 
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         QualitySettings.vSyncCount = 0;
         Application.targetFrameRate = 60;
@@ -106,21 +108,17 @@ public class PlayerController : MonoBehaviour
         goalParticleObject = GameObject.Find("GoalParticle1");
         goalParticle1 = goalParticleObject.GetComponent<ParticleSystem>();
         goalParticle1.Stop();
-
-        GameObject jumpParticleObject = GameObject.Find("JumpParticle");
-        jumpParticle = jumpParticleObject.GetComponent<ParticleSystem>();
-        jumpParticle.Stop();
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
         afterimage.UpdateTransform(transform.position, transform.localScale);
 
-        if (Input.GetKeyDown(KeyCode.A)|| Input.GetKeyDown(KeyCode.D))
+        if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.D))
         {
             soundManager.PlaySe(clip_move);
-        } 
+        }
         if (Input.GetKeyDown(KeyCode.LeftShift))
         {
             soundManager.PlaySe(clip_dash);
@@ -149,7 +147,7 @@ public class PlayerController : MonoBehaviour
                 particleSystem_.Play();
 
                 shaker.ShakeCamera();
-              //  fadeScript.StartFade();
+                //  fadeScript.StartFade();
                 hasShaken = true; // 振動させたのでフラグを立てる
             }
 
@@ -164,12 +162,11 @@ public class PlayerController : MonoBehaviour
                 hasShaken = false; // リセット時に振動フラグもリセットする
             }
         }
-        else if(isClear)
+        else if (isClear)
         {
             //プレイヤーの速度を０にする
             rb.velocity = Vector2.zero;
             animator.PlayInFixedTime("Attack", 0);
-
 
             currentClearTimer -= Time.deltaTime;
             if (currentClearTimer <= 0)
@@ -182,18 +179,16 @@ public class PlayerController : MonoBehaviour
         {
             PlayerUpdate();
             UpdateAnimation();
-            UpdateUI();    
+            UpdateUI();
         }
     }
 
-
-    void PlayerUpdate()
+    private void PlayerUpdate()
     {
         float x = Input.GetAxis("Horizontal");
 
         // LSHIFT を押しているときだけ上方向の入力を許可
-        float y =  0;
-
+        float y = 0;
 
         //ダッシュ中をfalseに
         DashTime -= Time.deltaTime;
@@ -203,9 +198,8 @@ public class PlayerController : MonoBehaviour
             hasShaken = false; // リセット時に振動フラグもリセットする
         }
 
-
         // ダッシュ可能でかつ LSHIFT が押された時のみダッシュ処理を行う
-        if (DashCoolTime <= 0 && !isDashing && Input.GetKey(KeyCode.LeftShift)&& (Input.GetKey(KeyCode.A)|| Input.GetKey(KeyCode.D)))
+        if (DashCoolTime <= 0 && !isDashing && Input.GetKey(KeyCode.LeftShift) && (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D)))
         {
             isDashing = true;
             DashTime = dashTime;
@@ -224,16 +218,13 @@ public class PlayerController : MonoBehaviour
 
             // Rigidbody2D の AddForce を使ってダッシュする
             rb.AddForce(dashDirection * dashSpeed, ForceMode2D.Impulse);
-      
-        
         }
         // ダッシュしていない場合は通常の移動処理
         if (!isDashing)
         {
-
             float controlFactor = isGrounded ? 10.0f : airControlFactor;
 
-            if (x != 0 || y != 0) 
+            if (x != 0 || y != 0)
             {
                 currentSpeed += acceleration * Time.deltaTime * controlFactor;
                 currentSpeed = Mathf.Clamp(currentSpeed, 0, maxSpeed);
@@ -261,17 +252,10 @@ public class PlayerController : MonoBehaviour
             animator.PlayInFixedTime("Jump", 0);
 
             soundManager.PlaySe(clip_jump);
-
-            Vector3 jumpParticlePosition = transform.position;
-            jumpParticlePosition.y -= 1;
-            jumpParticle.transform.position = jumpParticlePosition;
-            jumpParticle.Play();
         }
 
         DashCoolTime -= Time.deltaTime;
-
     }
-
 
     //地面との接触を判定する関数（OnCollisionEnter2DとOnCollisionExit2Dを使用）
     private void OnCollisionEnter2D(Collision2D collision)
@@ -293,9 +277,15 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private void OnTriggerStay2D(UnityEngine.Collider2D collision)
+    {
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            isGrounded = true;
+        }
+    }
 
-
-    void UpdateAnimation()
+    private void UpdateAnimation()
     {
         // 現在のステート名を取得
         AnimatorClipInfo[] clipInfo = animator.GetCurrentAnimatorClipInfo(0);
@@ -381,7 +371,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void UpdateUI()
+    private void UpdateUI()
     {
         ApplyDownArrow();
         ApplyUpArrow();
@@ -391,42 +381,47 @@ public class PlayerController : MonoBehaviour
         ApplySpaceKey();
     }
 
-    void ApplyDownArrow()
+    private void ApplyDownArrow()
     {
         if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S))
             uiButton[(int)Button.Down].ButtonDown();
         else
             uiButton[(int)Button.Down].ButtonRelease();
     }
-    void ApplyUpArrow()
+
+    private void ApplyUpArrow()
     {
         if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W))
             uiButton[(int)Button.Up].ButtonDown();
         else
             uiButton[(int)Button.Up].ButtonRelease();
     }
-    void ApplyRightArrow()
+
+    private void ApplyRightArrow()
     {
         if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
             uiButton[(int)Button.Right].ButtonDown();
         else
             uiButton[(int)Button.Right].ButtonRelease();
     }
-    void ApplyLeftArrow()
+
+    private void ApplyLeftArrow()
     {
         if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
             uiButton[(int)Button.Left].ButtonDown();
         else
             uiButton[(int)Button.Left].ButtonRelease();
     }
-    void ApplyShiftKey()
+
+    private void ApplyShiftKey()
     {
         if (Input.GetKey(KeyCode.LeftShift))
             uiButton[(int)Button.Shift].ButtonDown();
         else
             uiButton[(int)Button.Shift].ButtonRelease();
     }
-    void ApplySpaceKey()
+
+    private void ApplySpaceKey()
     {
         if (Input.GetKey(KeyCode.Space))
             uiButton[(int)Button.Space].ButtonDown();
@@ -437,7 +432,7 @@ public class PlayerController : MonoBehaviour
     public void Clear(bool clear)
     {
         isClear = clear;
-        if(isClear)
+        if (isClear)
         {
             currentClearTimer = clearTimer;
 
@@ -461,18 +456,17 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-
-
     public void Death(bool death)
     {
         isDeath = death;
-       
+
         if (isDeath)
         {
             //デス時のタイマーリセット
             currentDeathTimer = deathTimer;
         }
     }
+
     private void PlayerReset()
     {
         this.transform.position = Vector3.zero;
@@ -483,5 +477,4 @@ public class PlayerController : MonoBehaviour
         // アニメーション再生速度設定
         animator.speed = 1.0f;
     }
-
 }

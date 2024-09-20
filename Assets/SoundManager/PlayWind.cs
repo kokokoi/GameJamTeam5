@@ -11,7 +11,8 @@ public class PlayWind : MonoBehaviour
 
     void Start()
     {
-        soundManager.BgmVolume = 1.0f;
+        soundManager.StopBgm();
+        soundManager.BgmVolume = 1.5f;
         soundManager.PlayBgm(clip);
     }
 }
